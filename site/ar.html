@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Abdullah &amp; Fiza in AR</title>
+<meta name="description" content="Point your camera at the printed invitation to see the bouquets lift off the page.">
+<meta name="theme-color" content="#0B0F0C">
+<link rel="stylesheet" href="assets/css/fonts.css?v=c45d02d9">
+<link rel="stylesheet" href="assets/css/ar.css?v=2691ee7f">
+</head>
+<body>
+
+<!-- ============ 1. gate: ask before touching the camera ============ -->
+<section class="panel" id="gate">
+  <p class="panel-kicker">Abdullah &amp; Fiza</p>
+  <h1>See the invitation come alive</h1>
+  <div class="panel-rule"></div>
+  <p>Hold your printed invitation in good light and point your camera at it. The bouquets
+  lift off the paper, petals begin to fall, and the details rise into the air around it.</p>
+  <button class="btn btn-primary" id="startBtn" type="button">Start the camera</button>
+  <a class="link-quiet" href="index.html">or view the invitation without AR</a>
+</section>
+
+<!-- ============ 2. setup notice: image target not compiled ============ -->
+<section class="panel" id="setup" hidden>
+  <p class="panel-kicker">One step remaining</p>
+  <h1>The card tracker isn’t installed yet</h1>
+  <div class="panel-rule"></div>
+  <p>AR needs a compiled tracking file for the card artwork:</p>
+  <ol>
+    <li>Open <code>hiukim.github.io/mind-ar-js-doc/tools/compile</code></li>
+    <li>Upload a photo or scan of the printed card</li>
+    <li>Press <strong>Start</strong>, then download <code>targets.mind</code></li>
+    <li>Rename it to <code>card.mind</code> and put it in the <code>targets/</code> folder</li>
+  </ol>
+  <a class="btn" href="index.html">Back to the invitation</a>
+</section>
+
+<!-- ============ 3. camera unavailable ============ -->
+<section class="panel" id="denied" hidden>
+  <p class="panel-kicker">Camera unavailable</p>
+  <h1 id="deniedTitle">We couldn’t open the camera</h1>
+  <div class="panel-rule"></div>
+  <p id="deniedBody">Allow camera access in your browser settings and try again. If you opened this from WhatsApp or Instagram, tap the ⋯ menu and choose “Open in Safari” or “Open in Chrome”.</p>
+  <button class="btn" id="retryBtn" type="button">Try again</button>
+  <a class="link-quiet" href="index.html">or view the invitation without AR</a>
+</section>
+
+<!-- ============ 4. the live scene ============ -->
+<div id="stage" hidden>
+
+  <template id="sceneTpl">
+  <a-scene
+    id="scene"
+    mindar-image="imageTargetSrc: ./targets/card.mind; autoStart: false; uiScanning: no; uiLoading: no; uiError: no; filterMinCF: 0.0001; filterBeta: 0.005; missTolerance: 8; warmupTolerance: 3"
+    embedded
+    renderer="colorManagement: true; alpha: true; antialias: true; sortObjects: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <img id="imgGlow" src="assets/img/ar-glow.png?v=0356f596">
+      <img id="imgMono" src="assets/img/ar-monogram.png?v=797c34e8">
+      <img id="imgMeta" src="assets/img/ar-meta.png?v=ad6f3003">
+      <img id="imgMote" src="assets/img/ar-mote.png?v=9acb9754">
+      <img id="imgFlTR" src="assets/img/ar-floral-tr.png?v=1ab04693">
+      <img id="imgFlBL" src="assets/img/ar-floral-bl.png?v=02dbcde5">
+      <img id="imgPetA" src="assets/img/ar-petal-a.png?v=bdb37430">
+      <img id="imgPetB" src="assets/img/ar-petal-b.png?v=bf3e91c4">
+      <img id="imgPetC" src="assets/img/ar-petal-c.png?v=de250963">
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"
+              cursor="fuse: false; rayOrigin: mouse"
+              raycaster="objects: .tappable; far: 40"></a-camera>
+
+    <!-- Target space: the card is 1 unit wide and 1.5 tall, centred on 0,0.
+         Every material below is `shader: flat` deliberately. These are 2D
+         artwork overlays, and A-Frame's default `standard` shader is lit —
+         with no lights in the scene it renders black on some mobile GPUs.
+
+         Entrance animations fire on the `reveal` event rather than on load,
+         so the whole sequence replays each time the card is re-found. -->
+    <a-entity id="target" mindar-image-target="targetIndex: 0">
+
+      <!-- warm light washing across the paper -->
+      <a-plane src="#imgGlow" position="0 0 0.006" width="1.65" height="2.25"
+               material="shader: flat; transparent: true; blending: additive; opacity: 0; depthWrite: false"
+               animation__in="property: material.opacity; from: 0; to: 0.55; dur: 1500; easing: easeOutSine; startEvents: reveal"
+               animation__pulse="property: material.opacity; from: 0.55; to: 0.36; dir: alternate; loop: true; dur: 2800; delay: 1600; easing: easeInOutSine; startEvents: reveal"></a-plane>
+
+      <!-- The two printed bouquets, cut out and lifted off the page. They sit
+           exactly over their originals, then rise and grow ~6%, so the printed
+           copy stays visible just behind and the pair parallax as you move. -->
+      <a-entity id="flTR" position="0.3262 0.5654 0.004"
+                animation__lift="property: position; from: 0.3262 0.5654 0.004; to: 0.3262 0.5794 0.105; dur: 1500; delay: 250; easing: easeOutCubic; startEvents: reveal"
+                animation__grow="property: scale; from: 1 1 1; to: 1.06 1.06 1.06; dur: 1500; delay: 250; easing: easeOutCubic; startEvents: reveal"
+                animation__drift="property: position; from: 0.3262 0.5794 0.105; to: 0.3262 0.5894 0.125; dir: alternate; loop: true; dur: 4200; delay: 1800; easing: easeInOutSine; startEvents: reveal">
+        <a-plane src="#imgFlTR" width="0.5" height="0.5"
+                 material="shader: flat; transparent: true; opacity: 0; depthWrite: false"
+                 animation__fade="property: material.opacity; from: 0; to: 1; dur: 900; delay: 250; easing: easeOutSine; startEvents: reveal"></a-plane>
+      </a-entity>
+
+      <a-entity id="flBL" position="-0.2793 -0.6299 0.004"
+                animation__lift="property: position; from: -0.2793 -0.6299 0.004; to: -0.2793 -0.6429 0.09; dur: 1500; delay: 450; easing: easeOutCubic; startEvents: reveal"
+                animation__grow="property: scale; from: 1 1 1; to: 1.055 1.055 1.055; dur: 1500; delay: 450; easing: easeOutCubic; startEvents: reveal"
+                animation__drift="property: position; from: -0.2793 -0.6429 0.09; to: -0.2793 -0.6529 0.108; dir: alternate; loop: true; dur: 4800; delay: 2000; easing: easeInOutSine; startEvents: reveal">
+        <a-plane src="#imgFlBL" width="0.5" height="0.25"
+                 material="shader: flat; transparent: true; opacity: 0; depthWrite: false"
+                 animation__fade="property: material.opacity; from: 0; to: 1; dur: 900; delay: 450; easing: easeOutSine; startEvents: reveal"></a-plane>
+      </a-entity>
+
+      <!-- falling petals and gold motes, both built in ar.js -->
+      <a-entity id="petals"></a-entity>
+      <a-entity id="motes"></a-entity>
+
+      <!-- monogram medallion, floating clear of the card's top edge -->
+      <a-entity id="mono" position="0 0.97 0.26" scale="0.001 0.001 0.001"
+                animation__pop="property: scale; from: 0.001 0.001 0.001; to: 0.44 0.44 0.44; dur: 1100; delay: 600; easing: easeOutBack; startEvents: reveal"
+                animation__bob="property: position; from: 0 0.97 0.26; to: 0 1.04 0.30; dir: alternate; loop: true; dur: 3600; delay: 1700; easing: easeInOutSine; startEvents: reveal">
+        <a-plane class="tappable" src="#imgMono" width="1" height="1"
+                 material="shader: flat; transparent: true; alphaTest: 0.01; side: double; depthWrite: false"
+                 animation__spin="property: rotation; from: 0 -10 0; to: 0 10 0; dir: alternate; loop: true; dur: 5400; easing: easeInOutSine; startEvents: reveal"></a-plane>
+      </a-entity>
+
+      <!-- date + venue below the card -->
+      <a-plane id="meta" src="#imgMeta" position="0 -0.94 0.16" width="1.0" height="0.25"
+               material="shader: flat; transparent: true; opacity: 0; depthWrite: false"
+               animation__in="property: material.opacity; from: 0; to: 1; dur: 1000; delay: 1400; easing: easeOutSine; startEvents: reveal"
+               animation__rise="property: position; from: 0 -0.84 0.16; to: 0 -0.98 0.16; dur: 1400; delay: 1400; easing: easeOutCubic; startEvents: reveal"></a-plane>
+
+      <!-- optional couple video, enabled from config.js -->
+      <a-entity id="videoHolder"></a-entity>
+
+    </a-entity>
+  </a-scene>
+  </template>
+
+  <div class="hud">
+    <div class="hud-top">
+      <a class="chip" href="index.html">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Invitation
+      </a>
+      <span class="chip chip-guest" id="guestChip" hidden></span>
+    </div>
+
+    <div class="scan" id="scan">
+      <div class="scan-frame"><span class="scan-line"></span></div>
+      <p>Point your camera at the printed invitation and hold steady</p>
+    </div>
+
+    <div class="hud-actions" id="hudActions" hidden>
+      <a class="btn" id="arMap" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-7 7-12a7 7 0 1 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="9" r="2.6"/></svg>
+        Directions
+      </a>
+      <button class="btn" id="arCal" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.4"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        Calendar
+      </button>
+      <a class="btn" id="arRsvp" href="#" target="_blank" rel="noopener" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="m4 6.5 8 6 8-6"/></svg>
+        RSVP
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/config.js?v=eab848de"></script>
+<script src="assets/js/ar.js?v=29c3aec5"></script>
+</body>
+</html>

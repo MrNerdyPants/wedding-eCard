@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Digital &amp; AR invitations — Kashan Asim</title>
+<meta name="description" content="Digital invitations for weddings, birthdays, anniversaries, new babies and more — opened from a link, personalised for every guest, and printed cards that come alive in AR.">
+<meta name="theme-color" content="#F4EEE2">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Digital &amp; AR invitations — Kashan Asim">
+<meta property="og:description" content="Wedding eCards, AR cards, birthday, anniversary and baby cards — made to order. Message on WhatsApp to start yours.">
+<meta property="og:image" content="https://abdullah-weds-fiza.netlify.app/assets/img/og-mbw.jpg?v=b5bff232">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23F4EEE2'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='18' fill='%23A8813A' text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/cormorant-garamond-400-latin.woff2">
+<link rel="stylesheet" href="assets/css/fonts.css?v=c45d02d9">
+<style>
+  :root {
+    --paper: #F4EEE2; --paper-hi: #FBF8F1; --paper-lo: #E9E0CD;
+    --ink: #17281A; --ink-soft: #46543F; --ink-mute: #6E7866;
+    --gold: #A8813A; --gold-ink: #8A6520; --gold-lt: #C9AB74; --gold-hair: #D3B98F;
+    --wa: #1F7A4D;
+    --ease: cubic-bezier(.22, .75, .25, 1);
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(90% 50% at 50% 0%, rgba(255, 253, 247, .95), rgba(244, 238, 226, 0) 70%),
+      var(--paper);
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.12rem;
+    line-height: 1.55;
+  }
+  a { color: inherit; }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 1.25rem; }
+
+  .kicker {
+    margin: 0;
+    font-family: 'Jost', system-ui, sans-serif;
+    font-weight: 300;
+    font-size: .7rem;
+    letter-spacing: .34em;
+    text-indent: .34em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+  }
+  .rule {
+    width: 7rem; height: 1px; margin: 1.1rem auto;
+    background: linear-gradient(90deg, transparent, var(--gold-hair), transparent);
+  }
+
+  /* --- hero --- */
+  .hero {
+    position: relative;
+    padding: clamp(3.5rem, 12vw, 6.5rem) 0 clamp(2.5rem, 8vw, 4rem);
+    text-align: center;
+    overflow: hidden;
+  }
+  .hero h1 {
+    margin: .7rem 0 0;
+    font-weight: 400;
+    font-size: clamp(2.3rem, 8.5vw, 3.9rem);
+    line-height: 1.05;
+  }
+  .hero h1 em { font-family: 'Great Vibes', cursive; font-style: normal; font-weight: 400; color: var(--gold-ink); font-size: 1.12em; }
+  .hero p.lede {
+    max-width: 34rem; margin: 0 auto;
+    font-size: clamp(1.1rem, 3.6vw, 1.3rem);
+    color: var(--ink-soft);
+  }
+  .floral {
+    position: absolute; pointer-events: none; opacity: .9;
+    width: clamp(150px, 30vw, 300px);
+  }
+  .floral-tr { top: -10px; right: -24px; }
+  .floral-bl { bottom: -30px; left: -30px; width: clamp(130px, 24vw, 240px); transform: scaleY(-1) rotate(180deg) scaleX(-1); }
+
+  /* --- buttons --- */
+  .cta { display: flex; flex-wrap: wrap; justify-content: center; gap: .7rem; margin-top: 1.8rem; }
+  .btn {
+    display: inline-flex; align-items: center; gap: .55rem;
+    padding: .85rem 1.3rem;
+    border: 1px solid var(--gold-hair); border-radius: 2px;
+    background: rgba(251, 248, 241, .7);
+    font-family: 'Jost', system-ui, sans-serif; font-weight: 400;
+    font-size: .74rem; letter-spacing: .16em; text-transform: uppercase;
+    text-decoration: none; color: var(--ink-soft);
+    transition: border-color .25s ease, background .25s ease, transform .25s var(--ease);
+  }
+  .btn:hover, .btn:focus-visible { border-color: var(--gold); background: var(--paper-hi); transform: translateY(-1px); }
+  .btn svg { width: 1.05rem; height: 1.05rem; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+  .btn-wa { background: var(--wa); border-color: var(--wa); color: #FBF8F1; }
+  .btn-wa:hover, .btn-wa:focus-visible { background: #186640; border-color: #186640; }
+  .btn-wa svg { fill: currentColor; stroke: none; }
+
+  /* --- sections --- */
+  section.block { padding: clamp(2.5rem, 7vw, 4rem) 0; text-align: center; }
+  section.block h2 {
+    margin: .55rem 0 0;
+    font-weight: 400; font-size: clamp(1.7rem, 5.5vw, 2.4rem); line-height: 1.15;
+  }
+  section.block > .wrap > p.sub { max-width: 36rem; margin: .8rem auto 0; color: var(--ink-soft); }
+
+  .grid {
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    margin-top: 2.2rem; text-align: left;
+  }
+  .tile {
+    position: relative;
+    padding: 1.5rem 1.4rem 1.4rem;
+    background: var(--paper-hi);
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(196, 173, 124, .45), 0 18px 36px -26px rgba(60, 46, 18, .35);
+  }
+  .tile h3 { margin: 0; font-weight: 600; font-size: 1.3rem; line-height: 1.2; }
+  .tile p { margin: .45rem 0 0; color: var(--ink-soft); font-size: 1.04rem; }
+  .tile .ico {
+    display: grid; place-items: center;
+    width: 2.6rem; height: 2.6rem; margin-bottom: .9rem;
+    border: 1px solid var(--gold-hair); border-radius: 50%;
+    color: var(--gold-ink);
+  }
+  .tile .ico svg { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  .tile-feature { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; gap: 1.2rem; align-items: center; }
+  @media (min-width: 720px) { .tile-feature { grid-template-columns: 1.1fr .9fr; padding: 2rem; } }
+  .tile-feature .pics { display: flex; justify-content: center; gap: .6rem; }
+  .tile-feature .pics img {
+    width: 24%; max-width: 96px; height: auto; border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(196, 173, 124, .5), 0 12px 24px -14px rgba(60, 46, 18, .45);
+  }
+  .tile-feature .pics img:nth-child(1) { transform: rotate(-5deg) translateY(6px); }
+  .tile-feature .pics img:nth-child(3) { transform: rotate(5deg) translateY(6px); }
+
+  ul.ticks { list-style: none; margin: 2rem auto 0; padding: 0; max-width: 46rem; text-align: left;
+             display: grid; gap: .35rem 1.6rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  ul.ticks li { position: relative; padding-left: 1.5rem; color: var(--ink-soft); }
+  ul.ticks li::before {
+    content: ''; position: absolute; left: .2rem; top: .62em;
+    width: .45rem; height: .45rem; border: 1px solid var(--gold); transform: rotate(45deg);
+  }
+
+  ol.steps { list-style: none; margin: 2.2rem auto 0; padding: 0; max-width: 46rem;
+             display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); counter-reset: s; }
+  ol.steps li { counter-increment: s; padding: 0 .5rem; }
+  ol.steps li::before {
+    content: counter(s);
+    display: block; margin: 0 auto .5rem;
+    font-family: 'Great Vibes', cursive; font-size: 2.4rem; line-height: 1; color: var(--gold-ink);
+  }
+  ol.steps strong { display: block; font-weight: 600; font-size: 1.15rem; }
+  ol.steps span { color: var(--ink-soft); font-size: 1.02rem; }
+
+  .contact {
+    margin: clamp(1rem, 4vw, 2rem) auto clamp(3rem, 9vw, 5rem);
+    max-width: 40rem; padding: clamp(2rem, 6vw, 3rem) 1.4rem;
+    text-align: center; background: var(--paper-hi); border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(196, 173, 124, .55), 0 26px 50px -30px rgba(60, 46, 18, .4);
+  }
+  .contact h2 { margin: .5rem 0 0; font-weight: 400; font-size: clamp(1.7rem, 5.5vw, 2.3rem); }
+  .contact .who { margin: .6rem 0 0; font-family: 'Great Vibes', cursive; font-size: 2rem; color: var(--gold-ink); }
+  .contact .num { margin: .2rem 0 0; font-family: 'Jost', system-ui, sans-serif; font-weight: 300; letter-spacing: .12em; color: var(--ink-soft); }
+
+  footer { padding: 0 1rem 2.5rem; text-align: center;
+           font-family: 'Jost', system-ui, sans-serif; font-weight: 300; font-size: .62rem;
+           letter-spacing: .2em; text-transform: uppercase; color: var(--ink-mute); }
+  footer a { color: var(--gold-ink); text-decoration: none; border-bottom: 1px solid var(--gold-hair); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <img class="floral floral-tr" src="assets/img/ar-floral-tr.png?v=1ab04693" alt="" aria-hidden="true">
+  <div class="wrap">
+    <p class="kicker">Invitations, made to order</p>
+    <h1>Cards your guests <em>open</em></h1>
+    <div class="rule"></div>
+    <p class="lede">Digital invitations that arrive as a sealed envelope, open into your own card,
+      and carry everything a guest needs — the date, the directions, the RSVP — in one link.
+      Printed cards that come alive through the phone camera, too.</p>
+    <div class="cta">
+      <a class="btn btn-wa js-wa" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3z"/></svg>
+        Message on WhatsApp
+      </a>
+      <a class="btn" href="./">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="1.5"/></svg>
+        See a live example
+      </a>
+    </div>
+  </div>
+</header>
+
+<section class="block">
+  <div class="wrap">
+    <p class="kicker">What I make</p>
+    <h2>For every occasion worth gathering for</h2>
+
+    <div class="grid">
+      <article class="tile tile-feature">
+        <div>
+          <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="1.5"/></svg></div>
+          <h3>Wedding eCards</h3>
+          <p>Mehndi, Barat, Walima, Nikkah, Dholki — one link that opens a wax-sealed envelope and hands
+            each guest only the cards they are invited to, with their name on every one.
+            Built from your own printed artwork, so the screen and the paper match.</p>
+        </div>
+        <div class="pics" aria-hidden="true">
+          <img src="assets/img/thumb-mehndi.jpg?v=ef9147a9" alt="" width="300" height="800" loading="lazy">
+          <img src="assets/img/thumb-barat.jpg?v=f0af0e36" alt="" width="300" height="800" loading="lazy">
+          <img src="assets/img/thumb-walima.jpg?v=535dfe38" alt="" width="300" height="800" loading="lazy">
+        </div>
+      </article>
+
+      <article class="tile">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16"/><path d="M12 8.6 8.2 10.6v3.8L12 16.4l3.8-2v-3.8z"/></svg></div>
+        <h3>AR cards</h3>
+        <p>A printed card that comes alive. Point a phone at it and the florals lift off the paper,
+          petals fall and the date rises — no app to install.</p>
+      </article>
+
+      <article class="tile">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21h16M5 21v-7h14v7M12 14V9M9 9h6M12 6.5V5"/><path d="M12 5c-.8-.9-.8-2 0-3 .8 1 .8 2.1 0 3z"/></svg></div>
+        <h3>Birthday cards</h3>
+        <p>From a first birthday to a fiftieth — playful or elegant, with the venue, the time and a
+          countdown to the day.</p>
+      </article>
+
+      <article class="tile">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></div>
+        <h3>Anniversary cards</h3>
+        <p>For the dinner, the party or simply the message — something worth keeping, for a milestone
+          worth marking.</p>
+      </article>
+
+      <article class="tile">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="10" r="5"/><path d="M10 10h.01M14 10h.01M10.5 12.3c.9.6 2.1.6 3 0M7 20c1-2 3-3 5-3s4 1 5 3"/></svg></div>
+        <h3>Baby cards</h3>
+        <p>Birth announcements, Aqiqah and baby showers — the name, the date and the first photo,
+          shared with everyone at once.</p>
+      </article>
+
+      <article class="tile">
+        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.4 5 5.6.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9 5.6-.8z"/></svg></div>
+        <h3>And more</h3>
+        <p>Engagements, Eid gatherings, graduations, housewarmings, corporate dinners — if there is a
+          guest list, there can be a card.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <p class="kicker">In every card</p>
+    <h2>Everything a guest needs, in one link</h2>
+    <ul class="ticks">
+      <li>A personal link per guest, with their name on the envelope</li>
+      <li>Only the events each guest is invited to</li>
+      <li>Seats held per family, per event</li>
+      <li>RSVP straight to your WhatsApp</li>
+      <li>Directions to the venue in one tap</li>
+      <li>Add to calendar — Google, iPhone and Outlook</li>
+      <li>A live countdown to the day</li>
+      <li>Background music, if you would like it</li>
+      <li>A QR code for the printed card</li>
+      <li>A link preview that shows the right events in WhatsApp</li>
+      <li>Print-ready PDFs of the same design</li>
+      <li>Works on any phone — nothing to install</li>
+    </ul>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <p class="kicker">How it works</p>
+    <h2>From your details to your guests' phones</h2>
+    <ol class="steps">
+      <li><strong>Tell me about it</strong><span>The occasion, the dates and venues, and any artwork you already have.</span></li>
+      <li><strong>See a preview</strong><span>A working link to try on your own phone, refined until it is right.</span></li>
+      <li><strong>Send it out</strong><span>Your guest links, QR codes and print files, ready to share.</span></li>
+    </ol>
+  </div>
+</section>
+
+<div class="wrap">
+  <section class="contact">
+    <p class="kicker">Start yours</p>
+    <h2>Tell me about your event</h2>
+    <p class="who js-name"></p>
+    <p class="num js-num"></p>
+    <div class="cta">
+      <a class="btn btn-wa js-wa" href="#" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3z"/></svg>
+        Message on WhatsApp
+      </a>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <a href="./">Back to the Abdullah &amp; Fiza invitation</a>
+</footer>
+
+<script src="assets/js/config.js?v=eab848de"></script>
+<script>
+  (function () {
+    var C = window.WEDDING, H = C.helpers, c = C.credit || {};
+    var msg = 'Assalamu alaikum' + (c.name ? ' ' + c.name.split(' ')[0] : '') +
+              '! I would like an invitation made for my event.';
+    var d = String(c.whatsapp || '').replace(/\D/g, '');
+    var shown = d.indexOf('92') === 0 && d.length === 12 ? '0' + d.slice(2, 5) + ' ' + d.slice(5) : (c.whatsapp || '');
+    document.querySelectorAll('.js-wa').forEach(function (a) {
+      if (c.whatsapp) a.href = H.waLink(c.whatsapp, msg);
+      else a.remove();
+    });
+    document.querySelectorAll('.js-name').forEach(function (n) { n.textContent = c.name || ''; });
+    document.querySelectorAll('.js-num').forEach(function (n) { n.textContent = shown ? 'WhatsApp · ' + shown : ''; });
+    if (c.name) document.title = 'Digital & AR invitations — ' + c.name;
+  })();
+</script>
+</body>
+</html>

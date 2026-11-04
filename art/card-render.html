@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Card render</title>
+<!--
+  Used by build-site.mjs to photograph each card for the envelope's
+  thumbnails: the very card the invitation builds, for no one in
+  particular, with every entrance animation already finished.
+    card-render.html?event=mehndi
+-->
+<base href="../site/">
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/invite.css">
+<style>
+  html, body { margin: 0; padding: 0; min-height: 0; background: #fff; }
+  body::before, body::after { display: none; }
+  .cards { width: 300px; display: block; }
+  .card { box-shadow: none; }
+  .card .reveal, .card .leaf { opacity: 1 !important; animation: none !important; transform: none !important; }
+  .card .name { clip-path: none !important; }
+</style>
+</head>
+<body>
+<div class="cards" id="cards"></div>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/cards.js"></script>
+<script>
+  var key = new URLSearchParams(location.search).get('event') || WEDDING.order[0];
+  var card = Cards.build(WEDDING.helpers.event(key), {});
+  card.classList.add('is-active', 'is-open');
+  document.getElementById('cards').appendChild(card);
+  var imgs = Array.prototype.map.call(card.querySelectorAll('img'), function (i) {
+    return i.decode ? i.decode().catch(function () {}) : null;
+  });
+  document.fonts.ready.then(function () {
+    Cards.layout(card);
+    return Promise.all(imgs);
+  }).then(function () { document.body.dataset.ready = '1'; });
+</script>
+</body>
+</html>

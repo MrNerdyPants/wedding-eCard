@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guest Links &amp; QR Codes — source</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="site/assets/css/fonts.css">
+</head>
+<body>
+<!--
+  ============================================================
+  THIS FILE IS THE SOURCE OF THE GUEST TOOL. It is not deployed.
+  Edit it here, then run:
+
+      node build-guests.mjs
+
+  which asks for the password and writes the encrypted version to
+  site/guests.html. Opening this file directly in a browser
+  works too, for editing — the paths above and below point one
+  folder down so it still finds the fonts, the QR library and the
+  config while you work.
+  ============================================================
+-->
+<script src="site/assets/vendor/qrcode-generator.min.js"></script>
+<script src="site/assets/js/config.js"></script>
+
+<!--PAYLOAD-START-->
+<style>
+:root{
+  --paper:#F2F4EF; --paper-hi:#FFFFFF; --paper-lo:#E9EDE6;
+  --ink:#1B1E1B; --ink-soft:#454C46; --ink-mute:#737C75;
+  --gold:#7C9581; --gold-ink:#5A7262; --gold-hair:#C6D3C8; --line:#D8DFD6;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;padding:0;background:var(--paper);color:var(--ink);
+  font-family:'Cormorant Garamond',Georgia,serif;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:78rem;margin:0 auto;padding:clamp(1.5rem,5vw,3rem) clamp(1rem,4vw,2rem) 5rem}
+header{border-bottom:1px solid var(--line);padding-bottom:1.4rem;margin-bottom:2rem}
+.kick{margin:0;font-family:'Jost',sans-serif;font-weight:300;font-size:.68rem;
+  letter-spacing:.4em;text-indent:.4em;text-transform:uppercase;color:var(--gold-ink)}
+h1{margin:.35rem 0 .5rem;font-size:clamp(1.9rem,5.5vw,2.6rem);font-weight:500;line-height:1.1}
+.lede{margin:0;max-width:46rem;font-size:1.05rem;font-weight:300;line-height:1.65;color:var(--ink-soft)}
+section{margin-bottom:2.6rem}
+h2{display:flex;align-items:baseline;gap:.6rem;margin:0 0 .9rem;font-size:1.35rem;font-weight:600}
+h2 .num{font-family:'Jost',sans-serif;font-weight:400;font-size:.66rem;letter-spacing:.2em;
+  color:var(--gold-ink);border:1px solid var(--gold-hair);border-radius:2px;padding:.15rem .4rem}
+.hint{margin:.1rem 0 .9rem;font-size:.95rem;font-weight:300;line-height:1.6;color:var(--ink-mute)}
+.fld{display:block;font-family:'Jost',sans-serif;font-weight:400;font-size:.66rem;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:.4rem}
+input[type=text],textarea{
+  width:100%;padding:.7rem .8rem;border:1px solid var(--line);border-radius:3px;
+  background:var(--paper-hi);color:var(--ink);
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86rem;line-height:1.5;
+}
+textarea{min-height:11rem;resize:vertical;font-family:'Cormorant Garamond',Georgia,serif;font-size:1.05rem}
+input:focus,textarea:focus{outline:2px solid var(--gold-ink);outline-offset:1px;border-color:transparent}
+.row{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center;margin-top:.9rem}
+button,.btn{
+  display:inline-flex;align-items:center;gap:.45rem;padding:.62rem 1rem;
+  border:1px solid var(--gold-hair);border-radius:2px;background:transparent;color:var(--ink);
+  font-family:'Jost',sans-serif;font-weight:400;font-size:.7rem;letter-spacing:.14em;
+  text-transform:uppercase;text-decoration:none;cursor:pointer;white-space:nowrap;
+  transition:background-color .25s,border-color .25s;
+}
+button:hover,.btn:hover{background:rgba(168,129,58,.08);border-color:var(--gold)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button[hidden],.btn[hidden]{display:none}
+.primary{background:var(--ink);border-color:var(--ink);color:var(--paper-hi)}
+.primary:hover{background:#090B09;border-color:#090B09}
+.tiny{padding:.4rem .6rem;font-size:.62rem;letter-spacing:.1em}
+
+/* --- an event chip: invited, and how many places --- */
+.evset{display:flex;flex-wrap:wrap;gap:.5rem}
+.ev{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem .55rem;
+  border:1px solid var(--line);border-radius:3px;background:var(--paper);
+  font-family:'Jost',sans-serif;font-size:.72rem;letter-spacing:.06em;color:var(--ink-mute);
+  transition:border-color .2s,background-color .2s,color .2s}
+.ev:has(input[type=checkbox]:checked){border-color:var(--gold);background:rgba(168,129,58,.09);color:var(--gold-ink)}
+.ev > .tick{display:inline-flex;align-items:center;gap:.4rem;cursor:pointer}
+.ev input[type=checkbox]{accent-color:var(--gold-ink);margin:0;cursor:pointer}
+.ev .nm{font-weight:500}
+.ev .d{font-size:.62rem;color:var(--ink-mute);letter-spacing:.02em;white-space:nowrap}
+.seatbox{display:inline-flex;align-items:center;gap:.25rem;padding-left:.5rem;
+  border-left:1px solid var(--line)}
+.seatbox.off{opacity:.3;pointer-events:none}
+.seatbox input{width:2.7rem;padding:.24rem .2rem;border:1px solid var(--line);border-radius:2px;
+  background:var(--paper-hi);font-family:'Jost',sans-serif;font-size:.78rem;text-align:center;color:var(--ink)}
+.seatbox .cap{font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute)}
+.panel{display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:flex-end;
+  padding:1.1rem 1.3rem;border:1px solid var(--line);border-radius:4px;background:var(--paper-hi)}
+
+.master{display:flex;flex-wrap:wrap;gap:1.6rem;align-items:center;
+  padding:1.4rem;border:1px solid var(--line);border-radius:4px;background:var(--paper-hi)}
+.master canvas{display:block;width:190px;height:190px;image-rendering:pixelated}
+.master .info{flex:1 1 16rem;min-width:0}
+.master .fld{margin:0 0 .5rem}
+.genurl{margin:.9rem 0 .7rem}
+.master p{margin:0 0 .7rem;font-size:1rem;font-weight:300;line-height:1.6;color:var(--ink-soft)}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.82rem;
+  background:rgba(168,129,58,.1);color:var(--gold-ink);padding:.12em .38em;border-radius:3px;
+  word-break:break-all}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px;background:var(--paper-hi)}
+table{width:100%;border-collapse:collapse;min-width:66rem}
+th,td{padding:.6rem .7rem;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-family:'Jost',sans-serif;font-weight:400;font-size:.62rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-mute);background:var(--paper-lo);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.n{font-variant-numeric:tabular-nums;color:var(--ink-mute);width:2.4rem;font-size:.9rem}
+td.name{font-size:1.06rem;font-weight:600;min-width:10rem}
+td.evs{white-space:nowrap}
+td.link input{font-size:.72rem;padding:.4rem .5rem;min-width:14rem;max-width:19rem}
+td.qr canvas{display:block;width:56px;height:56px;image-rendering:pixelated;
+  border:1px solid var(--line);background:#fff}
+td.act{white-space:nowrap}
+.empty{padding:2rem;text-align:center;color:var(--ink-mute);font-weight:300}
+.warn{color:#8A3A20}
+.count{font-family:'Jost',sans-serif;font-size:.68rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink-mute)}
+.toast{position:fixed;left:50%;bottom:1.4rem;transform:translate(-50%,1.4rem);
+  padding:.6rem 1.1rem;border-radius:3px;background:var(--ink);color:var(--paper-hi);
+  font-family:'Jost',sans-serif;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;
+  opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:50}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+.sheet{display:none}
+@media print{
+  @page{margin:12mm}
+  body{background:#fff}
+  .wrap>header,.wrap>section:not(.sheetwrap),.toast{display:none !important}
+  .sheet{display:grid !important;grid-template-columns:repeat(3,1fr);gap:9mm}
+  .sheetwrap{margin:0}
+  .pcard{break-inside:avoid;text-align:center;border:1px solid #cfd8cd;padding:6mm 4mm}
+  .pcard canvas{width:32mm;height:32mm;image-rendering:pixelated}
+  .pcard .cn{margin-top:3mm;font-size:11pt;font-weight:600}
+  .pcard .ce{margin-top:1.5mm;font-family:'Jost',sans-serif;font-size:6.5pt;
+    letter-spacing:.1em;text-transform:uppercase;color:#5A7262}
+  .pcard .cl{margin-top:1mm;font-family:'Jost',sans-serif;font-size:6pt;
+    letter-spacing:.14em;text-transform:uppercase;color:#6f786f}
+}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="kick" id="hdrKick">Abdullah &amp; Fiza</p>
+  <h1>Guest links &amp; QR codes</h1>
+  <p class="lede">Paste your list, tick the events each family is invited to, and set how many
+  places you are holding for them <em>at each one</em> — a family often gets more seats at the
+  Mehndi than at the Walima. Each guest gets a single link that opens only their cards, with
+  their name on every one. Nothing is uploaded; it is all generated in this browser, and your
+  list is kept here on this device.</p>
+</header>
+
+<section>
+  <h2><span class="num">1</span> Where the invitation lives</h2>
+  <label class="fld" for="base">Site address</label>
+  <input type="text" id="base" spellcheck="false" autocomplete="off">
+  <p class="hint">Change this if you move to a custom domain. Every link below updates.</p>
+  <p class="hint warn" id="baseWarn" hidden></p>
+</section>
+
+<section>
+  <h2><span class="num">2</span> A link with no name on it</h2>
+  <p class="hint">For the printed cards, for a WhatsApp broadcast, or for anyone you would
+  rather not name. The same invitation, just without <em>“For the Ahmed Family”</em> on it.
+  Leave it as it comes and it opens all three cards — which is what belongs on the printed
+  QR. Untick a card to make a single-event link, and set places if you want to.</p>
+  <div class="master">
+    <canvas id="masterQr" width="760" height="760"></canvas>
+    <div class="info">
+      <p class="fld">Which cards it opens</p>
+      <div class="evset" id="genEvents"></div>
+      <p class="genurl"><code id="masterUrl"></code></p>
+      <p class="hint warn" id="genWarn" hidden></p>
+      <div class="row">
+        <button class="primary" id="dlMaster" type="button">Download PNG</button>
+        <button id="dlMasterSvg" type="button">Download SVG</button>
+        <button id="copyMaster" type="button">Copy link</button>
+        <a class="btn" id="openMaster" target="_blank" rel="noopener">Open it</a>
+        <button id="resetMaster" type="button" hidden>Back to all three</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">3</span> What most guests get</h2>
+  <p class="hint">The starting point for every new name. Change any single guest afterwards
+  in the table.</p>
+  <div class="panel">
+    <div style="flex:1 1 100%">
+      <label class="fld">Invited to, and how many places</label>
+      <div class="evset" id="defEvents"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">4</span> Your guest list</h2>
+  <label class="fld" for="names">One guest or family per line</label>
+  <textarea id="names" spellcheck="false"></textarea>
+  <p class="hint" id="listHint"></p>
+  <div class="row">
+    <button class="primary" id="gen" type="button">Make the links</button>
+    <button id="applyDef" type="button" disabled>Apply defaults to all</button>
+    <button id="copyAll" type="button" disabled>Copy all links</button>
+    <button id="dlCsv" type="button" disabled>Download CSV</button>
+    <button id="print" type="button" disabled>Print QR sheet</button>
+    <span class="count" id="count"></span>
+  </div>
+</section>
+
+<section>
+  <div class="tablewrap">
+    <table>
+      <thead><tr id="thead"></tr></thead>
+      <tbody id="rows">
+        <tr><td colspan="6" class="empty">Add some names above and press “Make the links”.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="sheetwrap">
+  <div class="sheet" id="sheet"></div>
+</section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  var C = window.WEDDING;
+  var H = C.helpers;
+  var $ = function (id) { return document.getElementById(id); };
+  var EVENTS = H.list();
+  var INK = '#1B1E1B';
+  var STORE = 'abdullah-fiza-guests-v1';
+
+  var guests = [];
+
+  /* ---------- QR drawing ---------- */
+
+  function draw(canvas, text, px) {
+    var qr = qrcode(0, 'H');
+    qr.addData(text);
+    qr.make();
+    var n = qr.getModuleCount(), quiet = 4, total = n + quiet * 2;
+    var cell = Math.max(1, Math.floor(px / total));
+    var size = cell * total;
+    canvas.width = size; canvas.height = size;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = INK;
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        if (qr.isDark(r, c)) ctx.fillRect((c + quiet) * cell, (r + quiet) * cell, cell, cell);
+      }
+    }
+  }
+
+  function svgFor(text) {
+    var qr = qrcode(0, 'H');
+    qr.addData(text); qr.make();
+    var n = qr.getModuleCount(), quiet = 4, total = n + quiet * 2, path = '';
+    for (var r = 0; r < n; r++) {
+      for (var c = 0; c < n; c++) {
+        if (qr.isDark(r, c)) path += 'M' + (c + quiet) + ' ' + (r + quiet) + 'h1v1h-1z';
+      }
+    }
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + total + ' ' + total + '" ' +
+           'shape-rendering="crispEdges"><rect width="' + total + '" height="' + total +
+           '" fill="#fff"/><path d="' + path + '" fill="' + INK + '"/></svg>';
+  }
+
+  function saveBlob(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+  }
+
+  function slug(s) {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'guest';
+  }
+
+  var toastT;
+  function toast(msg) {
+    var t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { t.classList.remove('show'); }, 1900);
+  }
+
+  function copy(text, msg) {
+    navigator.clipboard.writeText(text).then(function () { toast(msg || 'Copied'); },
+      function () {
+        var ta = document.createElement('textarea');
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); toast(msg || 'Copied'); }
+        catch (e) { toast('Press Ctrl+C to copy'); }
+        ta.remove();
+      });
+  }
+
+  /* ---------- an event chip: invited, and how many places ---------- */
+
+  function chip(ev, state, onChange) {
+    var l = document.createElement('label');
+    l.className = 'ev';
+
+    var tick = document.createElement('span');
+    tick.className = 'tick';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = !!state.on;
+    var nm = document.createElement('span');
+    nm.className = 'nm'; nm.textContent = ev.name;
+    var dt = document.createElement('span');
+    dt.className = 'd';
+    dt.textContent = H.dateParts(ev).num + ' ' + H.dateParts(ev).month.slice(0, 3);
+    tick.append(cb, nm, dt);
+
+    var box = document.createElement('span');
+    box.className = 'seatbox' + (state.on ? '' : ' off');
+    var num = document.createElement('input');
+    num.type = 'number'; num.min = '0'; num.max = '99'; num.step = '1';
+    num.value = String(state.seats || 0);
+    num.setAttribute('aria-label', 'Places at the ' + ev.name);
+    var cap = document.createElement('span');
+    cap.className = 'cap'; cap.textContent = 'seats';
+    box.append(num, cap);
+
+    cb.addEventListener('change', function () {
+      box.classList.toggle('off', !cb.checked);
+      onChange({ on: cb.checked, seats: parseInt(num.value, 10) || 0 }, cb);
+    });
+    num.addEventListener('input', function () {
+      var v = parseInt(num.value, 10);
+      onChange({ on: cb.checked, seats: (v >= 0 && v < 100) ? v : 0 }, cb);
+    });
+
+    l.append(tick, box);
+    l.__set = function (st) {
+      cb.checked = !!st.on;
+      num.value = String(st.seats || 0);
+      box.classList.toggle('off', !st.on);
+    };
+    return l;
+  }
+
+  /* ---------- the defaults panel ---------- */
+
+  var defState = {};
+  EVENTS.forEach(function (e) { defState[e.key] = { on: true, seats: 2 }; });
+
+  EVENTS.forEach(function (e) {
+    $('defEvents').appendChild(chip(e, defState[e.key], function (st) {
+      defState[e.key] = st;
+    }));
+  });
+
+  $('names').placeholder = 'The Ahmed Family\n' +
+    'Dr. Kamran & Mrs. Sana | ' + EVENTS[1].letter + '2' + EVENTS[2].letter + '2\n' +
+    'Uncle Tariq | ' + EVENTS[2].letter + '1\n' +
+    'Ayesha Baji | ' + EVENTS.map(function (e) { return e.letter + '4'; }).join('');
+
+  $('listHint').innerHTML =
+    'Write names exactly as they should appear on the card. To set a guest as you type, add ' +
+    'their events after a vertical bar, each letter followed by the number of places: ' +
+    '<code>Dr. Kamran &amp; Mrs. Sana | ' + EVENTS[1].letter + '2' + EVENTS[2].letter + '2</code> ' +
+    '(' + EVENTS.map(function (e) { return '<b>' + e.letter + '</b> ' + e.name; }).join(', ') +
+    '). Letters on their own, like <code>| ' + EVENTS.map(function (e) { return e.letter; }).join('') +
+    '</code>, use the default seat counts. Leave it off entirely and the defaults above apply.';
+
+  $('hdrKick').textContent = C.couple + ' · ' + EVENTS.map(function (e) { return e.name; }).join(' · ');
+
+  (function head() {
+    var tr = $('thead');
+    ['', 'Guest', 'Invited to, and places', 'Personal link', 'QR', ''].forEach(function (t) {
+      var th = document.createElement('th');
+      th.textContent = t;
+      tr.appendChild(th);
+    });
+  })();
+
+  /* ---------- base url ---------- */
+
+  function base() {
+    var b = $('base').value.trim() || C.siteUrl;
+    if (!/^https?:\/\//i.test(b)) b = 'https://' + b;
+    return b.replace(/\?.*$/, '').replace(/\/+$/, '') + '/';
+  }
+
+  function keysOf(g) {
+    return EVENTS.filter(function (e) { return g.ev[e.key] && g.ev[e.key].on; })
+                 .map(function (e) { return e.key; });
+  }
+
+  function seatsOf(g) {
+    var out = {};
+    EVENTS.forEach(function (e) {
+      var st = g.ev[e.key];
+      if (st && st.on && st.seats > 0) out[e.key] = st.seats;
+    });
+    return out;
+  }
+
+  function linkFor(g) {
+    return H.link(base(), g.name, keysOf(g), seatsOf(g), '');
+  }
+
+  /* ---------- the general, no-name link ---------- */
+
+  var genState = {};
+  EVENTS.forEach(function (e) { genState[e.key] = { on: true, seats: 0 }; });
+
+  function genKeys() {
+    return EVENTS.filter(function (e) { return genState[e.key].on; })
+                 .map(function (e) { return e.key; });
+  }
+
+  function genSeats() {
+    var o = {};
+    EVENTS.forEach(function (e) {
+      if (genState[e.key].on && genState[e.key].seats > 0) o[e.key] = genState[e.key].seats;
+    });
+    return o;
+  }
+
+  function generalLink() { return H.link(base(), '', genKeys(), genSeats(), ''); }
+
+  /* untouched means all three and no counts — the one safe to print */
+  function genIsPlain() {
+    return genKeys().length === EVENTS.length && !Object.keys(genSeats()).length;
+  }
+
+  function names(keys) {
+    var n = keys.map(function (k) { return H.event(k).name; });
+    if (n.length === 1) return 'the ' + n[0] + ' only';
+    return 'the ' + n.slice(0, -1).join(', ') + ' and ' + n[n.length - 1];
+  }
+
+  function genSlug() {
+    return genIsPlain() ? 'invitation'
+      : genKeys().map(function (k) { return H.event(k).name.toLowerCase(); }).join('-');
+  }
+
+  EVENTS.forEach(function (e) {
+    $('genEvents').appendChild(chip(e, genState[e.key], function (st, cb) {
+      if (!st.on && genKeys().length === 1 && genState[e.key].on) {
+        cb.checked = true;
+        toast('A link has to open at least one card');
+        return;
+      }
+      genState[e.key] = st;
+      refreshMaster();
+    }));
+  });
+
+  $('resetMaster').addEventListener('click', function () {
+    EVENTS.forEach(function (e, i) {
+      genState[e.key] = { on: true, seats: 0 };
+      $('genEvents').children[i].__set(genState[e.key]);
+    });
+    refreshMaster();
+    toast('Back to all three cards');
+  });
+
+  function refreshMaster() {
+    var url = generalLink();
+    draw($('masterQr'), url, 760);
+    $('masterUrl').textContent = url;
+    $('openMaster').href = url;
+    $('resetMaster').hidden = genIsPlain();
+
+    /* a narrowed link is the wrong thing to print on every card */
+    var gw = $('genWarn');
+    if (genIsPlain()) {
+      gw.hidden = true;
+    } else {
+      var held = Object.keys(genSeats()).length;
+      gw.textContent = 'This one opens ' + names(genKeys()) +
+        (held ? ', with places held' : '') +
+        ' — good for sending, but not the one to print on every card.';
+      gw.hidden = false;
+    }
+
+    /* If the site has been renamed, the address remembered here is the
+       old one — and every QR printed from it would point at nothing.
+       Say so rather than let it pass quietly. */
+    var host = function (u) { try { return new URL(u).host; } catch (e) { return u; } };
+    var warn = $('baseWarn');
+    if (host(base()) !== host(C.siteUrl)) {
+      warn.textContent = 'Heads up: this is not the address in config.js (' +
+        host(C.siteUrl) + '). Every link and QR below will point at ' + host(base()) +
+        '. Fine if you meant to move; change it back if you did not.';
+      warn.hidden = false;
+    } else {
+      warn.hidden = true;
+    }
+  }
+
+  /* ---------- parsing the list ---------- */
+
+  function blankEv() {
+    var o = {};
+    EVENTS.forEach(function (e) { o[e.key] = { on: false, seats: 0 }; });
+    return o;
+  }
+
+  function defaultEv() {
+    var o = {};
+    EVENTS.forEach(function (e) {
+      o[e.key] = { on: !!defState[e.key].on, seats: defState[e.key].seats || 0 };
+    });
+    return o;
+  }
+
+  /*  "The Ahmed Family"            -> the defaults
+      "Sana | b2w2"                 -> Barat 2 places, Walima 2
+      "Tariq | w"                   -> Walima only, default seats
+      "Ayesha | mbw | 4"            -> all three, four places each      */
+  function parseLine(line) {
+    var bits = line.split('|');
+    var name = H.clean(bits[0]);
+    if (!name) return null;
+    if (bits.length < 2 || !bits[1].trim()) return { name: name, ev: defaultEv() };
+
+    var raw = bits[1].trim().toLowerCase();
+    var flat = parseInt(bits[2], 10);
+    if (!(flat >= 0 && flat < 100)) flat = null;
+
+    var ev = blankEv();
+    var any = false;
+
+    /* letter+count pairs, e.g. m6b2w4 */
+    var re = /([a-z])\s*(\d{1,2})?/g, m;
+    while ((m = re.exec(raw))) {
+      var k = H.byLetter[m[1]];
+      if (!k) continue;
+      var n = m[2] != null ? parseInt(m[2], 10)
+            : (flat != null ? flat : (defState[k].seats || 0));
+      ev[k] = { on: true, seats: (n >= 0 && n < 100) ? n : 0 };
+      any = true;
+    }
+
+    /* or full names, e.g. "walima" */
+    if (!any) {
+      EVENTS.forEach(function (e) {
+        if (raw.indexOf(e.key) !== -1) {
+          ev[e.key] = { on: true, seats: flat != null ? flat : (defState[e.key].seats || 0) };
+          any = true;
+        }
+      });
+    }
+
+    return any ? { name: name, ev: ev } : { name: name, ev: defaultEv() };
+  }
+
+  /* ---------- persistence ---------- */
+
+  function save() {
+    try {
+      localStorage.setItem(STORE, JSON.stringify({
+        base: $('base').value, def: defState, guests: guests
+      }));
+    } catch (_) { /* private window, or storage is full */ }
+  }
+
+  function load() {
+    try {
+      var d = JSON.parse(localStorage.getItem(STORE) || 'null');
+      if (!d) return false;
+      if (d.base) $('base').value = d.base;
+      if (d.def) {
+        EVENTS.forEach(function (e, i) {
+          if (d.def[e.key]) {
+            defState[e.key] = d.def[e.key];
+            $('defEvents').children[i].__set(d.def[e.key]);
+          }
+        });
+      }
+      if (Array.isArray(d.guests) && d.guests.length) {
+        guests = d.guests.filter(function (g) { return g && g.name && g.ev; });
+        $('names').value = guests.map(function (g) {
+          return g.name + ' | ' + EVENTS.filter(function (e) { return g.ev[e.key].on; })
+            .map(function (e) { return e.letter + (g.ev[e.key].seats || 0); }).join('');
+        }).join('\n');
+        return guests.length > 0;
+      }
+    } catch (_) { /* nothing usable stored */ }
+    return false;
+  }
+
+  /* ---------- the table ---------- */
+
+  function whatsappText(g, url) {
+    var list = keysOf(g).map(function (k) {
+      var e = H.event(k);
+      var s = g.ev[k].seats;
+      return e.name + ' (' + H.dateParts(e).num + ' ' + H.dateParts(e).month +
+             (s ? ', ' + s + (s === 1 ? ' place' : ' places') : '') + ')';
+    });
+    var which = list.length === EVENTS.length
+      ? 'all our wedding events — ' + list.join(', ')
+      : list.join(' and ');
+    return 'Assalamu alaikum ' + g.name + '! You are warmly invited to ' + which +
+           ' for the wedding of ' + C.couple + '. Your invitation: ' + url;
+  }
+
+  function render() {
+    var tb = $('rows'), sheet = $('sheet');
+    tb.textContent = '';
+    sheet.textContent = '';
+
+    if (!guests.length) {
+      var tr0 = document.createElement('tr');
+      var td0 = document.createElement('td');
+      td0.colSpan = 6; td0.className = 'empty';
+      td0.textContent = 'Add some names above and press “Make the links”.';
+      tr0.appendChild(td0); tb.appendChild(tr0);
+      $('count').textContent = '';
+      ['copyAll', 'dlCsv', 'print', 'applyDef'].forEach(function (id) { $(id).disabled = true; });
+      return;
+    }
+
+    guests.forEach(function (g, i) {
+      var tr = document.createElement('tr');
+
+      var n = document.createElement('td');
+      n.className = 'n'; n.textContent = String(i + 1);
+
+      var nm = document.createElement('td');
+      nm.className = 'name'; nm.textContent = g.name;
+
+      var evs = document.createElement('td');
+      evs.className = 'evs';
+      var set = document.createElement('div');
+      set.className = 'evset';
+      EVENTS.forEach(function (e) {
+        set.appendChild(chip(e, g.ev[e.key], function (st, cb) {
+          /* never leave a guest with no events at all */
+          if (!st.on && keysOf(g).length === 1 && g.ev[e.key].on) {
+            cb.checked = true;
+            toast('Every guest needs at least one event');
+            return;
+          }
+          g.ev[e.key] = st;
+          refreshRow(tr, g);
+          save();
+        }));
+      });
+      evs.appendChild(set);
+
+      var lk = document.createElement('td');
+      lk.className = 'link';
+      var inp = document.createElement('input');
+      inp.type = 'text'; inp.readOnly = true;
+      inp.addEventListener('focus', function () { inp.select(); });
+      lk.appendChild(inp);
+
+      var qc = document.createElement('td');
+      qc.className = 'qr';
+      qc.appendChild(document.createElement('canvas'));
+
+      var act = document.createElement('td');
+      act.className = 'act';
+
+      var bCopy = document.createElement('button');
+      bCopy.className = 'tiny'; bCopy.type = 'button'; bCopy.textContent = 'Copy';
+      bCopy.addEventListener('click', function () { copy(linkFor(g), 'Link copied'); });
+
+      var bWa = document.createElement('a');
+      bWa.className = 'btn tiny'; bWa.target = '_blank'; bWa.rel = 'noopener';
+      bWa.textContent = 'WhatsApp';
+
+      var bQr = document.createElement('button');
+      bQr.className = 'tiny'; bQr.type = 'button'; bQr.textContent = 'QR';
+      bQr.addEventListener('click', function () {
+        var big = document.createElement('canvas');
+        draw(big, linkFor(g), 900);
+        big.toBlob(function (b) { saveBlob(b, 'invite-' + slug(g.name) + '.png'); }, 'image/png');
+      });
+
+      act.append(bCopy, ' ', bWa, ' ', bQr);
+      tr.append(n, nm, evs, lk, qc, act);
+      tr.__parts = { input: inp, canvas: qc.firstChild, wa: bWa };
+      tb.appendChild(tr);
+      refreshRow(tr, g);
+
+      /* the printable sheet */
+      var card = document.createElement('div');
+      card.className = 'pcard';
+      var pc = document.createElement('canvas');
+      card.appendChild(pc);
+      draw(pc, linkFor(g), 420);
+      var cn = document.createElement('div');
+      cn.className = 'cn'; cn.textContent = g.name;
+      var ce = document.createElement('div');
+      ce.className = 'ce';
+      ce.textContent = keysOf(g).map(function (k) {
+        return H.event(k).name + (g.ev[k].seats ? ' ' + g.ev[k].seats : '');
+      }).join(' · ');
+      var cl = document.createElement('div');
+      cl.className = 'cl'; cl.textContent = 'Scan for your invitation';
+      card.append(cn, ce, cl);
+      sheet.appendChild(card);
+    });
+
+    var seats = guests.reduce(function (a, g) {
+      return a + keysOf(g).reduce(function (b, k) { return Math.max(b, g.ev[k].seats || 0); }, 0);
+    }, 0);
+    $('count').textContent = guests.length + (guests.length === 1 ? ' guest' : ' guests') +
+                             (seats ? ' · up to ' + seats + ' people at the largest event each' : '');
+    ['copyAll', 'dlCsv', 'print', 'applyDef'].forEach(function (id) { $(id).disabled = false; });
+  }
+
+  function refreshRow(tr, g) {
+    var url = linkFor(g);
+    tr.__parts.input.value = url;
+    draw(tr.__parts.canvas, url, 224);
+    tr.__parts.wa.href = 'https://wa.me/?text=' + encodeURIComponent(whatsappText(g, url));
+  }
+
+  /* ---------- wiring ---------- */
+
+  var restored = load();
+  if (!$('base').value) $('base').value = C.siteUrl;
+  refreshMaster();
+  if (restored) render();
+
+  $('base').addEventListener('input', function () {
+    refreshMaster();
+    if (guests.length) render();
+    save();
+  });
+
+  $('gen').addEventListener('click', function () {
+    if (!EVENTS.some(function (e) { return defState[e.key].on; })) {
+      toast('Tick at least one default event'); return;
+    }
+    var seen = {};
+    guests = $('names').value.split('\n')
+      .map(parseLine)
+      .filter(function (g) {
+        if (!g) return false;
+        var k = g.name.toLowerCase();
+        if (seen[k]) return false;
+        seen[k] = 1;
+        return true;
+      });
+    render();
+    save();
+    if (guests.length) toast(guests.length + ' links ready');
+  });
+
+  $('applyDef').addEventListener('click', function () {
+    guests.forEach(function (g) { g.ev = defaultEv(); });
+    render();
+    save();
+    toast('Defaults applied to every guest');
+  });
+
+  $('copyAll').addEventListener('click', function () {
+    copy(guests.map(function (g) {
+      return g.name + '\t' +
+        keysOf(g).map(function (k) { return H.event(k).name + ' ' + (g.ev[k].seats || 0); }).join(', ') +
+        '\t' + linkFor(g);
+    }).join('\n'), 'All links copied');
+  });
+
+  $('dlCsv').addEventListener('click', function () {
+    var q = function (s) { return '"' + String(s).replace(/"/g, '""') + '"'; };
+    var head = ['Guest'].concat(EVENTS.map(function (e) { return e.name + ' places'; }))
+                        .concat(['Link']).join(',');
+    var body = guests.map(function (g) {
+      return [q(g.name)]
+        .concat(EVENTS.map(function (e) {
+          return (g.ev[e.key].on ? (g.ev[e.key].seats || 0) : '');
+        }))
+        .concat([q(linkFor(g))]).join(',');
+    }).join('\n');
+    saveBlob(new Blob([head + '\n' + body], { type: 'text/csv;charset=utf-8' }),
+             'abdullah-fiza-guest-links.csv');
+  });
+
+  $('print').addEventListener('click', function () { window.print(); });
+
+  $('dlMaster').addEventListener('click', function () {
+    var big = document.createElement('canvas');
+    draw(big, generalLink(), 1400);
+    big.toBlob(function (b) { saveBlob(b, genSlug() + '-qr-print.png'); }, 'image/png');
+  });
+
+  $('dlMasterSvg').addEventListener('click', function () {
+    saveBlob(new Blob([svgFor(generalLink())], { type: 'image/svg+xml' }),
+             genSlug() + '-qr-print.svg');
+  });
+
+  $('copyMaster').addEventListener('click', function () { copy(generalLink(), 'Link copied'); });
+})();
+</script>
+<!--PAYLOAD-END-->
+</body>
+</html>

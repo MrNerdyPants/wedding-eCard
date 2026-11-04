@@ -1,0 +1,1386 @@
+
+/* ============================================================
+   Abdullah & Fiza — the invitation bundle
+   A deliberately single-world design: printed stationery, not a
+   web page. No dark theme; every colour is painted explicitly so
+   the page holds on any host background. Palette taken from the
+   printed card: white stock, black ink, pale sage leaves.
+   ============================================================ */
+
+:root {
+  /* paper + ink, from the printed card */
+  --paper:      #F2F4EF;
+  --paper-hi:   #FFFFFF;
+  --paper-lo:   #E3E8E0;
+  --ink:        #1B1E1B;
+  --ink-soft:   #454C46;
+  --ink-mute:   #737C75;
+
+  /* the accent is the sage of the watercolour leaves. The names are
+     the gold ones the rest of the stylesheet was written with. */
+  --gold:       #7C9581;
+  --gold-ink:   #5A7262;
+  --gold-lt:    #A9BDAD;
+  --gold-hair:  #C6D3C8;
+  --gold-hi:    #E3EBE3;
+  --sage:       #BFCCC0;
+
+  /* the card itself */
+  --card-ink:   #161816;
+  --card-text:  #262826;
+
+  --shadow-card: 0 1px 3px rgba(30, 40, 34, .05),
+                 0 22px 60px -24px rgba(30, 40, 34, .28),
+                 0 4px 14px -6px rgba(30, 40, 34, .08);
+
+  --ease: cubic-bezier(.22, .75, .25, 1);
+  --u: 3.8px;            /* card unit; overridden by 1cqw or JS */
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Cormorant Garamond', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+body.is-locked { overflow: hidden; }
+
+/* warm vignette + paper grain over the whole ground */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(120% 80% at 50% 0%,   rgba(255, 255, 253, .85), transparent 60%),
+    radial-gradient(100% 70% at 50% 100%, rgba(176, 194, 180, .30), transparent 65%);
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: .045;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-ink);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* music toggle ------------------------------------------------ */
+/* bottom right, not top right: the event switcher owns the top of
+   the page and the two would collide on a narrow screen */
+.music-btn {
+  position: fixed;
+  bottom: max(.9rem, env(safe-area-inset-bottom));
+  right: max(.9rem, env(safe-area-inset-right));
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 1px solid var(--gold-hair);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .82);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+  color: var(--gold-ink);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(.9);
+  transition: opacity .6s var(--ease), transform .6s var(--ease),
+              background-color .3s ease, border-color .3s ease, color .3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.music-btn.is-in { opacity: 1; transform: none; }
+.music-btn[hidden] { display: none; }
+.music-btn:hover, .music-btn:focus-visible {
+  background: rgba(255, 255, 255, .96);
+  border-color: var(--gold);
+}
+.music-btn.is-muted { color: var(--ink-mute); }
+.music-btn svg {
+  width: 1.05rem; height: 1.05rem;
+  fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ambient gold dust ------------------------------------------- */
+#dust { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+/* ==================================================================
+   THE ENVELOPE
+   ================================================================== */
+
+.open-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: clamp(1rem, 5vw, 2rem) 1rem;
+  background:
+    radial-gradient(80% 60% at 50% 42%, rgba(255, 255, 254, .97), rgba(242, 244, 239, .99) 70%),
+    var(--paper);
+  transition: opacity .7s var(--ease), visibility .7s;
+}
+
+.open-screen.is-gone { opacity: 0; visibility: hidden; }
+
+.open-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 0;
+  transition: opacity .7s var(--ease);
+}
+
+.fonts-ready .open-inner { opacity: 1; }
+
+.open-head {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /* sits near the envelope while it is closed, then clears out of
+     the way as the cards rise into the space above it */
+  top: 17%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity .6s var(--ease);
+}
+
+.env-scene.is-out .open-head { opacity: 0; }
+
+.seal-kicker {
+  margin: 0 0 .35rem;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(.62rem, 2.4vw, .76rem);
+  letter-spacing: .42em;
+  text-indent: .42em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+
+.seal-rule {
+  width: clamp(4rem, 26vw, 7.5rem);
+  height: 1px;
+  margin: .85rem 0 0;
+  background: linear-gradient(90deg, transparent, var(--gold-hair), transparent);
+}
+
+/* --- the scene the envelope lives in --- */
+/* The cards are tall and slim (3 : 8), so the envelope is too: a long
+   portrait envelope, 1 : 2.4, with room above it for the cards to rise
+   into. Every position below is a share of the scene's height:
+     envelope 68.6% (2.4 widths) · flap 17.7% · headroom 31.4%       */
+.env-scene {
+  --envW: min(46vw, 230px, calc((100svh - 150px) / 3.6));
+  position: relative;
+  width: var(--envW);
+  height: calc(var(--envW) * 3.5);
+}
+
+/* back of the envelope: the sheet everything else is folded from */
+.env-back,
+.env-front,
+.env-flap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  transition: opacity .7s var(--ease), transform .8s var(--ease);
+}
+
+.env-back {
+  bottom: 0;
+  height: 68.6%;
+  z-index: 1;
+  border-radius: 3px;
+  background:
+    linear-gradient(175deg, #E0E5DD 0%, #E9ECE5 26%, #EEF1EB 60%, #E6EAE2 100%);
+  box-shadow:
+    0 1px 2px rgba(32, 42, 36, .06),
+    0 26px 54px -26px rgba(32, 42, 36, .34),
+    0 14px 20px -14px rgba(32, 42, 36, .30) inset;
+}
+
+/* the pocket: whatever is inside the envelope hides behind this */
+.env-front {
+  bottom: 0;
+  height: 68.6%;
+  z-index: 3;
+  border-radius: 3px;
+  /* the side flaps meet in the middle; the notch is where the top
+     flap tucks in, so nothing inside the envelope can be seen */
+  /* a hair shallower than the flap's point, so the two overlap and no
+     sliver of the cards inside can show along the flap's edge */
+  -webkit-clip-path: polygon(0 0, 50% 24.4%, 100% 0, 100% 100%, 0 100%);
+          clip-path: polygon(0 0, 50% 24.4%, 100% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(182deg, #FCFDFB 0%, #F3F5F1 62%, #E9ECE6 100%);
+}
+
+/* the folds of the side and bottom flaps */
+.env-folds {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.env-folds .fold {
+  fill: none;
+  stroke: rgba(138, 160, 144, .40);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.env-folds .fold-fill {
+  fill: rgba(255, 255, 255, .5);
+  stroke: none;
+}
+
+/* the name, written across the pocket the way it would be in ink */
+.env-addr {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+}
+.env-addr[hidden] { display: none; }
+
+.env-addr-label {
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(.5rem, 2vw, .58rem);
+  letter-spacing: .38em;
+  text-indent: .38em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.env-addr-name {
+  font-size: clamp(1rem, 4.6vw, 1.3rem);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--gold-ink);
+  text-wrap: balance;
+}
+
+.env-addr-rule {
+  width: 55%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-hair), transparent);
+}
+
+/* the flap, hinged along the top edge of the envelope */
+.env-flap {
+  top: 31.4%;
+  height: 17.7%;
+  z-index: 4;
+  transform-origin: top center;
+  transform: perspective(1100px) rotateX(0deg);
+  transition: transform 1s cubic-bezier(.4, .02, .2, 1), z-index 0s linear .45s;
+}
+.env-flap i {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transition: background .8s var(--ease), filter .8s var(--ease);
+  -webkit-clip-path: polygon(0 0, 100% 0, 50% 100%);
+          clip-path: polygon(0 0, 100% 0, 50% 100%);
+  background: linear-gradient(178deg, #FAFBF8 0%, #F0F2EE 60%, #E5E9E2 100%);
+  filter: drop-shadow(0 6px 10px rgba(32, 42, 36, .16));
+}
+
+.env-scene.is-open .env-flap {
+  transform: perspective(1100px) rotateX(-163deg);
+  z-index: 0;
+}
+
+/* once it is over the back, we are looking at the lining */
+.env-scene.is-open .env-flap i {
+  background: linear-gradient(2deg, #DDE6DA 0%, #D2DDCE 55%, #C6D2C2 100%);
+  filter: drop-shadow(0 -8px 14px rgba(32, 42, 36, .22));
+}
+
+/* The wax seal sits on the point of the flap and is a child of it,
+   so when the flap swings back the seal goes with it — which is what
+   actually happens when you open a sealed envelope. Pressing it gives
+   the small lift of the wax letting go; after that the paper does the
+   work and the seal turns away with it. */
+.seal-btn {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 6;
+  width: 50%;
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: 0;
+  cursor: pointer;
+  transform: translate(-50%, 42%);
+  transition: transform .45s var(--ease), opacity .42s ease .06s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.seal-svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 16px rgba(32, 42, 36, .32));
+  transition: transform .5s var(--ease), filter .5s var(--ease);
+}
+
+.seal-btn:hover .seal-svg,
+.seal-btn:focus-visible .seal-svg { transform: scale(1.04); }
+.seal-btn:active .seal-svg { transform: scale(.985); }
+
+/* the wax lets go: a small lift, and its shadow drops away from it */
+.env-scene.is-cracking .seal-btn {
+  transform: translate(-50%, 40%) scale(1.06);
+  pointer-events: none;
+}
+.env-scene.is-cracking .seal-svg {
+  filter: drop-shadow(0 16px 26px rgba(32, 42, 36, .40));
+}
+
+/* and then it turns away with the paper it was holding down */
+.env-scene.is-open .seal-btn { opacity: 0; }
+
+/* the mark the wax leaves behind on the paper */
+.seal-mark {
+  position: absolute;
+  left: 50%;
+  top: 49.1%;
+  z-index: 5;
+  width: 50%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(.88);
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(closest-side,
+    rgba(70, 92, 78, .13), rgba(70, 92, 78, .05) 62%, transparent 76%);
+  transition: opacity .5s ease .28s;
+  pointer-events: none;
+}
+
+.env-scene.is-cracking .seal-mark { opacity: 1; }
+.env-scene.is-away .seal-mark { opacity: 0; transition-delay: 0s; }
+
+/* the envelope bows out and drops away once the cards are clear */
+.env-scene.is-away .env-back  { opacity: 0; transform: translateY(14%) scale(.97); }
+.env-scene.is-away .env-front { opacity: 0; transform: translateY(18%) scale(.97); }
+.env-scene.is-away .env-flap  { opacity: 0; }
+
+/* ==================================================================
+   THE BUNDLE — the cards inside the envelope
+   ================================================================== */
+
+.bundle {
+  position: absolute;
+  left: 50%;
+  bottom: 1.5%;
+  z-index: 2;
+  width: 82%;
+  aspect-ratio: 3 / 8;
+  transform: translateX(-50%);
+  transition: transform 1.05s var(--ease);
+}
+
+.env-scene.is-out   .bundle { transform: translate(-50%, -33%); }
+.env-scene.is-fanned .bundle { transform: translate(-50%, -31%) scale(.86); }
+
+.bcard {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform-origin: 50% 100%;
+  transform: translateY(calc(var(--i) * -4px)) rotate(calc(var(--i) * 1.1deg)) scale(calc(1 - var(--i) * .015));
+  transition: transform .85s var(--ease), opacity .5s ease, filter .35s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* first in the list sits on top of the stack */
+/* spread like a hand of cards: each one sits over the last, so every
+   card keeps a clear slice of its own */
+.bundle .bcard:nth-child(1) { z-index: 1; }
+.bundle .bcard:nth-child(2) { z-index: 2; }
+.bundle .bcard:nth-child(3) { z-index: 3; }
+
+.env-scene.is-fanned .bcard {
+  transform: translate(var(--tx), var(--ty)) rotate(var(--rot));
+}
+
+.bcard-paper {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--paper-hi);
+  box-shadow:
+    0 0 0 1px rgba(150, 172, 156, .45),
+    0 2px 5px rgba(32, 42, 36, .10),
+    0 16px 30px -14px rgba(32, 42, 36, .40);
+  transition: box-shadow .35s ease, transform .35s var(--ease);
+}
+
+.bcard-paper img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bcard-tag {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: .75em 1em .6em;
+  text-align: var(--tag-al, center);
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: clamp(.5rem, 2.2vw, .62rem);
+  letter-spacing: .26em;
+  text-indent: .26em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+  background: linear-gradient(to top, rgba(255, 255, 255, .97) 42%, rgba(255, 255, 255, 0));
+}
+
+/* only liftable once the fan has actually opened */
+.env-scene.is-fanned .bcard:hover,
+.env-scene.is-fanned .bcard:focus-visible {
+  transform: translate(var(--tx), calc(var(--ty) - 5%)) rotate(var(--rot)) scale(1.04);
+  z-index: 5;
+}
+.env-scene.is-fanned .bcard:hover .bcard-paper,
+.env-scene.is-fanned .bcard:focus-visible .bcard-paper {
+  box-shadow:
+    0 0 0 1px rgba(104, 132, 112, .65),
+    0 4px 10px rgba(32, 42, 36, .12),
+    0 26px 44px -16px rgba(32, 42, 36, .45);
+}
+
+/* the chosen one steps forward, the others stand down */
+.env-scene.is-picked .bcard.is-chosen {
+  transform: translate(0, -6%) rotate(0deg) scale(1.1);
+  z-index: 9;
+}
+.env-scene.is-picked .bcard.is-let-go { opacity: 0; filter: blur(1px); }
+
+/* --- picker mode: the bundle on its own, no envelope --- */
+.open-screen.is-picker .env-back,
+.open-screen.is-picker .env-front,
+.open-screen.is-picker .env-flap,
+.open-screen.is-picker .seal-btn { display: none; }
+
+.open-screen.is-picker .env-scene { height: calc(var(--envW) * 2.95); }
+.open-screen.is-picker .bundle {
+  bottom: 6%;
+  transform: translate(-50%, 0) scale(.9);
+}
+.open-screen.is-picker .open-head { top: 1%; opacity: 1; }
+
+/* --- the events this envelope holds, above the fanned cards --- */
+.open-invited {
+  position: absolute;
+  left: -48%;
+  right: -48%;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .8s var(--ease), transform .8s var(--ease);
+  pointer-events: none;
+}
+
+.env-scene.is-fanned .open-invited { opacity: 1; transform: none; transition-delay: .25s; }
+.env-scene.is-picked .open-invited,
+.open-screen.is-picker .open-invited { opacity: 0; transition-delay: 0s; }
+
+.open-invited p { margin: 0; }
+
+.invited-kicker {
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(.6rem, 2.3vw, .72rem);
+  letter-spacing: .34em;
+  text-indent: .34em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+
+.invited-events {
+  margin-top: .3rem !important;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.45rem, 6.6vw, 1.9rem);
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.invited-dates {
+  margin-top: .45rem !important;
+  padding-top: .5rem;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(.62rem, 2.4vw, .74rem);
+  letter-spacing: .16em;
+  text-indent: .16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  background: linear-gradient(90deg, transparent, var(--gold-hair), transparent) top center / 5.5rem 1px no-repeat;
+}
+
+.open-hint {
+  margin: 1.1rem 0 0;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(.68rem, 2.6vw, .8rem);
+  letter-spacing: .26em;
+  text-indent: .26em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  animation: breathe 3.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: .5; }
+  50%      { opacity: 1; }
+}
+
+.picker-close {
+  margin-top: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .6rem 1rem;
+  border: 1px solid var(--gold-hair);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: 'Jost', system-ui, sans-serif;
+  font-size: .68rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.picker-close[hidden] { display: none; }
+.picker-close svg {
+  width: .8em; height: .8em;
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round;
+}
+.open-screen:not(.is-picker) .picker-close { display: none; }
+
+/* ==================================================================
+   THE SWITCHER
+   ================================================================== */
+
+.switcher {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  gap: .3rem;
+  padding: .7rem 1rem .6rem;
+  margin: 0 auto;
+  background: linear-gradient(to bottom, var(--paper) 62%, rgba(242, 244, 239, 0));
+}
+.switcher[hidden] { display: none; }
+
+.sw {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .12rem;
+  min-width: 4.6rem;
+  padding: .45rem .6rem .4rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink-mute);
+  /* buttons do not inherit the page's face on their own */
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  cursor: pointer;
+  transition: color .3s ease, border-color .3s ease, background-color .3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sw-name {
+  font-size: 1.02rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.sw-date {
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: .56rem;
+  letter-spacing: .18em;
+  text-indent: .18em;
+  text-transform: uppercase;
+}
+
+.sw:hover { color: var(--ink-soft); }
+
+.sw.is-on {
+  color: var(--gold-ink);
+  border-color: var(--gold-hair);
+  background: rgba(255, 255, 255, .8);
+}
+
+/* ==================================================================
+   THE CARDS
+   ================================================================== */
+
+.stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  padding: clamp(.4rem, 2vw, 1rem) clamp(.9rem, 4.5vw, 2rem) clamp(.5rem, 2vw, 1rem);
+}
+
+.cards {
+  display: grid;
+  width: min(100%, 430px);
+  transition: height .5s var(--ease);
+}
+
+/* the printed card is 3 : 8, white stock, no frame */
+.card {
+  grid-area: 1 / 1;
+  align-self: start;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 8;
+  overflow: hidden;
+  container-type: inline-size;
+  background: #FFFFFF;
+  box-shadow: var(--shadow-card);
+  isolation: isolate;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px) scale(.988);
+  transition: opacity .6s var(--ease), transform .7s var(--ease), visibility .6s;
+}
+
+.card.is-active { opacity: 1; visibility: visible; transform: none; }
+
+/* --- the watercolour sprigs, top left and bottom right --- */
+.leaf {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  pointer-events: none;
+}
+.leaf img { display: block; width: 100%; height: auto; }
+.leaf-tl { left: 0; top: 0; width: 53.3%; transform-origin: 0 0; }
+.leaf-br { right: 0; bottom: 0; width: 51.7%; transform-origin: 100% 100%; }
+
+.card.is-open .leaf { animation: leafIn 1.6s var(--ease) both; }
+.card.is-open .leaf-br { animation-delay: .5s; }
+
+@keyframes leafIn {
+  from { opacity: 0; transform: scale(1.04); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* --- the type ---
+   Five groups, spread down the card, so a guest's name takes its room
+   out of the gaps rather than pushing the families off the foot. */
+.content {
+  --base: 3.8px;
+  /* --fit is set by cards.js when a long name would otherwise push the
+     foot of the card past the edge */
+  --u: calc(var(--base) * var(--fit, 1));
+  position: absolute;
+  z-index: 3;
+  top: 4.4%;
+  bottom: 2.6%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  padding-inline: calc(6 * var(--u));
+  color: var(--card-ink);
+}
+
+@supports (width: 1cqw) {
+  .content { --base: 1cqw; }
+}
+
+.content p { margin: 0; }
+
+.c-grp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.reveal { opacity: 0; }
+
+.card.is-open .reveal {
+  animation: rise 1s var(--ease) both;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(calc(1.5 * var(--u))); }
+  to   { opacity: 1; transform: none; }
+}
+
+.hosts {
+  font-family: 'Bodoni Moda', 'Bodoni 72', Didot, Georgia, serif;
+  font-weight: 700;
+  font-size: calc(5.5 * var(--u));
+  line-height: 1.15;
+  letter-spacing: .005em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.invite {
+  margin-top: calc(1.5 * var(--u)) !important;
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-size: calc(4.05 * var(--u));
+  line-height: 1.5;
+  color: var(--card-text);
+}
+
+/* the personalised line */
+.guest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(.9 * var(--u));
+  margin: calc(1.4 * var(--u)) 0 calc(.4 * var(--u));
+  width: 100%;
+}
+
+.guest-rule {
+  width: calc(30 * var(--u));
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-lt) 22%, var(--gold-lt) 78%, transparent);
+}
+
+.guest-name {
+  font-family: 'Bodoni Moda', Didot, Georgia, serif;
+  font-size: calc(5.6 * var(--u));
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.2;
+  color: var(--gold-ink);
+  text-wrap: balance;
+}
+
+.guest + .invite { margin-top: calc(.6 * var(--u)) !important; }
+
+/* the couple, in the script of the printed card */
+.name {
+  font-family: 'Pinyon Script', 'Snell Roundhand', 'Apple Chancery', cursive;
+  font-weight: 400;
+  font-size: calc(14.4 * var(--u));
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--card-ink);
+}
+
+.weds {
+  margin: calc(.6 * var(--u)) 0 calc(.2 * var(--u)) !important;
+  font-family: 'Pinyon Script', 'Snell Roundhand', cursive;
+  font-size: calc(12.8 * var(--u));
+  line-height: 1.12;
+}
+
+/* the names write themselves on */
+.card.is-open .name.reveal {
+  animation: rise 1s var(--ease) both, writeOn 1.5s var(--ease) both;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes writeOn {
+  from { clip-path: inset(-20% 100% -30% -6%); }
+  to   { clip-path: inset(-20% -6% -30% -6%); }
+}
+
+/* --- the engraved title: MEHNDI / BARAT / WALIMA --- */
+.title {
+  display: block;
+  width: calc(58 * var(--u));
+  height: auto;
+  overflow: visible;
+}
+
+.title text {
+  font-family: 'Bodoni Moda', 'Bodoni 72', Didot, serif;
+  font-weight: 900;
+  font-size: 112px;
+  letter-spacing: 1px;
+  /* the sturdy cut of Bodoni, thickened a touch, so the engraved
+     lines have weight around them as they do in print */
+  font-variation-settings: 'opsz' 14;
+  fill: var(--card-ink);
+  stroke: var(--card-ink);
+  stroke-width: 3.2px;
+  stroke-linejoin: miter;
+}
+
+/* --- 13th NOVEMBER / FRIDAY, 2026 --- */
+.date {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: calc(1.1 * var(--u));
+  margin-top: calc(3.2 * var(--u));
+  font-family: 'Bodoni Moda', 'Bodoni 72', Didot, Georgia, serif;
+  /* the large figures in the sturdier cut, as printed */
+  font-variation-settings: 'opsz' 14;
+  color: var(--card-ink);
+}
+
+.d-num {
+  font-weight: 700;
+  font-size: calc(19.5 * var(--u));
+  line-height: .74;
+  font-variant-numeric: lining-nums;
+}
+
+.d-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.d-top {
+  display: flex;
+  align-items: baseline;
+  gap: calc(1.3 * var(--u));
+  line-height: .9;
+}
+
+.d-th {
+  font-weight: 700;
+  font-size: calc(9.6 * var(--u));
+}
+
+.d-month {
+  font-weight: 700;
+  font-size: calc(5.7 * var(--u));
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.d-day {
+  margin-top: calc(.6 * var(--u));
+  font-weight: 600;
+  font-size: calc(4.45 * var(--u));
+  line-height: 1;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+/* --- the programme, with dotted leaders --- */
+.sched {
+  width: 100%;
+  margin: 0;
+  padding: 0 calc(.5 * var(--u));
+  list-style: none;
+}
+
+.sched li {
+  display: flex;
+  align-items: baseline;
+  gap: calc(.8 * var(--u));
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-weight: 700;
+  font-size: calc(4.75 * var(--u));
+  line-height: 1.75;
+  text-align: left;
+}
+
+.s-what { white-space: nowrap; }
+
+.s-dots {
+  flex: 1 1 auto;
+  min-width: calc(5 * var(--u));
+  border-bottom: max(1px, calc(.25 * var(--u))) dotted #7A7F7A;
+  transform: translateY(-.28em);
+}
+
+.s-when { white-space: nowrap; }
+
+/* --- the place --- */
+.venue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: calc(3 * var(--u));
+}
+
+.v-name {
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-weight: 700;
+  font-size: calc(4.45 * var(--u));
+  line-height: 1.3;
+}
+
+.v-caps { text-transform: uppercase; letter-spacing: .03em; }
+
+.v-addr {
+  margin-top: calc(.3 * var(--u)) !important;
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-size: calc(4.2 * var(--u));
+  line-height: 1.3;
+  color: var(--card-text);
+}
+
+/* where the printed card has its QR: the pin, one tap away */
+.loc {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(1.2 * var(--u));
+  margin-top: calc(3.2 * var(--u));
+  padding: calc(1.5 * var(--u)) calc(3.4 * var(--u)) calc(1.5 * var(--u)) calc(2.8 * var(--u));
+  border: 1px solid var(--gold-hair);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .82);
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: calc(2.9 * var(--u));
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+  text-decoration: none;
+  transition: border-color .3s ease, color .3s ease, background-color .3s ease;
+}
+
+.loc:hover, .loc:focus-visible { border-color: var(--gold); color: var(--card-ink); background: #fff; }
+
+.loc svg { width: calc(3.4 * var(--u)); height: calc(3.4 * var(--u)); fill: var(--gold); flex: none; }
+
+/* how many seats are held. Quiet, never a rule. */
+.pax {
+  margin-top: calc(2.2 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: calc(.8 * var(--u));
+  padding: calc(.7 * var(--u)) calc(2 * var(--u)) calc(.7 * var(--u)) calc(1.6 * var(--u));
+  border: 1px solid var(--gold-hair);
+  border-radius: 999px;
+  color: var(--gold-ink);
+  background: rgba(255, 255, 255, .8);
+  opacity: .8;
+}
+
+.pax svg {
+  width: calc(3 * var(--u));
+  height: calc(3 * var(--u));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+}
+
+.pax-n {
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: calc(2.9 * var(--u));
+  letter-spacing: .04em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- the double rule, and the families at the foot --- */
+.divider {
+  display: block;
+  width: calc(56 * var(--u));
+  height: auto;
+  color: #6F746F;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) calc(27 * var(--u));
+  column-gap: calc(3 * var(--u));
+  width: 100%;
+  margin-top: calc(4.6 * var(--u));
+  text-align: left;
+}
+
+.col-h {
+  margin-bottom: calc(.5 * var(--u)) !important;
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-weight: 700;
+  font-size: calc(4.2 * var(--u));
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.col ul { margin: 0; padding: 0; list-style: none; }
+
+.col li {
+  font-family: 'Libre Baskerville', Baskerville, Georgia, serif;
+  font-size: calc(4 * var(--u));
+  line-height: 1.42;
+  color: var(--card-text);
+}
+
+.col-lf li { white-space: nowrap; }
+
+.col-rsvp a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--gold-lt);
+  text-underline-offset: .2em;
+}
+
+/* ==================================================================
+   TRAY — countdown + actions
+   ================================================================== */
+
+.tray {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.1rem, 4vw, 1.7rem);
+  padding: clamp(1.4rem, 5vw, 2.3rem) 1.25rem clamp(2rem, 7vw, 3rem);
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .9s var(--ease) .25s, transform .9s var(--ease) .25s;
+}
+
+.tray.is-in { opacity: 1; transform: none; }
+
+.tray-for {
+  margin: 0;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(.6rem, 2.4vw, .7rem);
+  letter-spacing: .26em;
+  text-indent: .26em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+  text-align: center;
+}
+.tray-for[hidden] { display: none; }
+
+.countdown {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(.4rem, 2.5vw, 1.4rem);
+  width: 100%;
+  max-width: 24rem;
+  text-align: center;
+}
+.countdown[hidden] { display: none; }
+
+.cd-cell { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+
+.cd-num {
+  font-size: clamp(1.6rem, 7.5vw, 2.3rem);
+  font-weight: 300;
+  line-height: 1;
+  color: var(--gold-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.cd-lab {
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(.54rem, 2.3vw, .64rem);
+  letter-spacing: .24em;
+  text-indent: .24em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.cd-msg {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.2rem, 5.5vw, 1.6rem);
+  font-style: italic;
+  color: var(--gold-ink);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .6rem;
+  width: 100%;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .78rem 1.15rem;
+  border: 1px solid var(--gold-hair);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font-family: 'Jost', system-ui, sans-serif;
+  font-size: .74rem;
+  letter-spacing: .17em;
+  text-indent: .17em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color .35s ease, border-color .35s ease, color .35s ease, transform .35s var(--ease);
+}
+
+.btn:hover, .btn:focus-visible {
+  background: rgba(104, 132, 112, .07);
+  border-color: var(--gold);
+  transform: translateY(-1px);
+}
+
+.btn:active { transform: translateY(0); }
+
+.btn svg {
+  width: 1em; height: 1em; flex: none;
+  stroke: currentColor; fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.btn-primary { background: var(--ink); border-color: var(--ink); color: var(--paper-hi); }
+.btn-primary:hover, .btn-primary:focus-visible { background: #090B09; border-color: #090B09; color: var(--paper-hi); }
+.btn[hidden] { display: none; }
+
+.subactions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+  margin: -.3rem 0 0;
+  text-align: center;
+}
+
+.subactions a,
+.subactions button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: .68rem;
+  letter-spacing: .13em;
+  color: var(--ink-mute);
+  text-decoration: underline;
+  text-underline-offset: .28em;
+  text-decoration-color: var(--gold-hair);
+  cursor: pointer;
+  transition: color .3s ease;
+}
+
+.subactions a:hover, .subactions button:hover,
+.subactions a:focus-visible, .subactions button:focus-visible { color: var(--gold-ink); }
+
+.subactions .dot { color: var(--gold-hair); font-size: .7rem; }
+.subactions [hidden] { display: none; }
+
+/* ==================================================================
+   RSVP — printed at the foot, the way it is on the card
+   ================================================================== */
+
+.rsvp {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .55rem;
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: clamp(.4rem, 2vw, 1rem) 1.25rem clamp(1.7rem, 6vw, 2.5rem);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .9s var(--ease) .45s, transform .9s var(--ease) .45s;
+}
+
+.rsvp.is-in { opacity: 1; transform: none; }
+.rsvp[hidden] { display: none; }
+
+.rsvp-rule {
+  width: clamp(4.5rem, 26vw, 7rem);
+  height: 1px;
+  margin-bottom: .75rem;
+  background: linear-gradient(90deg, transparent, var(--gold-lt) 45%, var(--gold-lt) 55%, transparent);
+}
+
+.rsvp-label {
+  margin: 0;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: clamp(.58rem, 2.3vw, .68rem);
+  letter-spacing: .34em;
+  text-indent: .34em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+
+.rsvp-people {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: .2rem 1.05rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rsvp-people li {
+  position: relative;
+  font-size: clamp(1rem, 4vw, 1.12rem);
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+/* a small gold lozenge between the names, never after the last */
+.rsvp-people li + li::before {
+  content: '';
+  position: absolute;
+  left: -.575rem;
+  top: .62em;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gold-hair);
+}
+
+.rsvp-people a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: .3em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--gold-hair);
+  transition: color .3s ease, text-decoration-color .3s ease;
+}
+
+.rsvp-people a:hover,
+.rsvp-people a:focus-visible {
+  color: var(--gold-ink);
+  text-decoration-color: var(--gold);
+}
+
+.rsvp-note {
+  margin: .15rem 0 0;
+  font-size: .95rem;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--ink-mute);
+}
+
+.site-foot {
+  position: relative;
+  z-index: 2;
+  padding: 0 4rem clamp(2rem, 8vw, 3.5rem);
+  text-align: center;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: .66rem;
+  letter-spacing: .22em;
+  text-indent: .22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+.site-foot p { margin: 0; }
+
+/* who made it: the smallest thing on the page, set like a printer's
+   imprint on the back of a card */
+.credit {
+  margin-top: 1.6rem !important;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: .25rem .6rem;
+  font-size: .56rem;
+  letter-spacing: .16em;
+  text-indent: 0;
+  color: var(--ink-mute);
+  opacity: .78;
+}
+.credit[hidden] { display: none; }
+
+.credit a {
+  color: var(--gold-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--gold-hair);
+  padding-bottom: 1px;
+}
+.credit a:hover,
+.credit a:focus-visible { color: var(--ink); border-bottom-color: var(--gold); }
+
+.credit-dot { color: var(--gold-lt); }
+/* the name on a line of its own, the two links under it */
+#creditLine { flex-basis: 100%; }
+#creditLine + .credit-dot { display: none; }
+
+/* ==================================================================
+   Motion preferences
+   ================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: .001ms !important;
+    transition-delay: 0s !important;
+  }
+  .card.is-open .name.reveal { clip-path: none; }
+  .open-hint { animation: none; opacity: .8; }
+}

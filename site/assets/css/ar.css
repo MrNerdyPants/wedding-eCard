@@ -1,0 +1,341 @@
+
+/* ============================================================
+   AR view — Abdullah & Fiza
+   Same palette as the invitation; dark HUD so it reads over a
+   live camera feed of any brightness.
+   ============================================================ */
+
+:root {
+  --paper:     #F4EEE2;
+  --paper-hi:  #FBF8F1;
+  --ink:       #17281A;
+  --ink-soft:  #46543F;
+  --ink-mute:  #6E7866;
+  --gold:      #A8813A;
+  --gold-ink:  #8A6520;
+  --gold-lt:   #C9AB74;
+  --gold-hair: #D3B98F;
+  --ease: cubic-bezier(.22, .75, .25, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+body.is-live { background: #0B0F0C; }
+
+:focus-visible { outline: 2px solid var(--gold-ink); outline-offset: 3px; }
+
+/* ---------- full-screen panels (gate / errors / setup) ---------- */
+
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 8vw 1.6rem;
+  text-align: center;
+  background:
+    radial-gradient(80% 60% at 50% 38%, rgba(255, 253, 247, .96), rgba(244, 238, 226, .99) 70%),
+    var(--paper);
+  overflow-y: auto;
+}
+
+.panel[hidden] { display: none; }
+
+.panel-kicker {
+  margin: 0;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: .7rem;
+  letter-spacing: .42em;
+  text-indent: .42em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+
+.panel h1 {
+  margin: .2rem 0 0;
+  font-size: clamp(1.9rem, 8vw, 2.6rem);
+  font-weight: 500;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.panel p {
+  margin: 0;
+  max-width: 30rem;
+  font-size: clamp(1rem, 4.2vw, 1.12rem);
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.panel ol {
+  margin: .2rem 0 0;
+  padding-left: 1.2rem;
+  max-width: 30rem;
+  text-align: left;
+  font-size: clamp(.95rem, 4vw, 1.05rem);
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+
+.panel code {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: .86em;
+  padding: .1em .35em;
+  border-radius: 3px;
+  background: rgba(168, 129, 58, .12);
+  color: var(--gold-ink);
+}
+
+.panel-rule {
+  width: 6rem;
+  height: 1px;
+  margin: .4rem 0;
+  background: linear-gradient(90deg, transparent, var(--gold-hair), transparent);
+}
+
+/* ---------- buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .85rem 1.35rem;
+  border: 1px solid var(--gold-hair);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: .76rem;
+  letter-spacing: .17em;
+  text-indent: .17em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color .3s ease, border-color .3s ease, transform .3s var(--ease);
+}
+
+.btn:hover, .btn:focus-visible { background: rgba(168, 129, 58, .08); border-color: var(--gold); }
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper-hi);
+  padding: 1rem 1.9rem;
+}
+
+.btn-primary:hover, .btn-primary:focus-visible { background: #0F1E12; border-color: #0F1E12; }
+
+.btn svg { width: 1em; height: 1em; flex: none; stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+/* an explicit display would otherwise defeat the hidden attribute */
+.btn[hidden], .chip[hidden] { display: none; }
+
+.link-quiet {
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: .72rem;
+  letter-spacing: .14em;
+  color: var(--ink-mute);
+  text-underline-offset: .3em;
+  text-decoration-color: var(--gold-hair);
+}
+
+/* ---------- the live AR stage ---------- */
+
+/* #stage must be a sized, positioned stacking context.
+   MindAR gives its camera <video> z-index:-2, and a negative-z child
+   paints BELOW the background of an in-flow block — so with the feed
+   parented to #stage, body's own background would cover it. Making
+   #stage the stacking context puts the video above body's background
+   while still keeping it behind the WebGL canvas.
+   The explicit inset:0 also gives a-scene's height:100% something real
+   to resolve against; without it the canvas collapsed to zero height. */
+#stage {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  background: #070A08;
+}
+
+#stage[hidden] { display: none; }
+
+/* A-Frame injects its own `a-scene` rule at runtime, which would win on
+   equal specificity — force ours. */
+#stage a-scene {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#stage .a-canvas { background: transparent !important; }
+
+.hud {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: max(.9rem, env(safe-area-inset-top)) .9rem max(1rem, env(safe-area-inset-bottom));
+}
+
+.hud > * { pointer-events: auto; }
+
+.hud-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .6rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .55rem .85rem;
+  border-radius: 100px;
+  border: 1px solid rgba(211, 185, 143, .5);
+  background: rgba(12, 18, 13, .58);
+  -webkit-backdrop-filter: blur(9px);
+          backdrop-filter: blur(9px);
+  color: #F6F1E6;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: .7rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.chip svg { width: .95em; height: .95em; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
+.chip-guest {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: .95rem;
+  letter-spacing: .01em;
+  text-transform: none;
+  color: #F0E2BE;
+  max-width: 55vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* scan prompt */
+.scan {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  transition: opacity .5s ease, transform .5s var(--ease);
+}
+
+.scan.is-hidden { opacity: 0; transform: scale(.97); pointer-events: none; }
+
+.scan-frame {
+  position: relative;
+  width: min(58vw, 230px);
+  aspect-ratio: 1024 / 1536;
+  border-radius: 3px;
+}
+
+.scan-frame::before,
+.scan-frame::after {
+  content: '';
+  position: absolute;
+  width: 30%;
+  height: 20%;
+  border: 2px solid rgba(240, 226, 190, .9);
+}
+
+.scan-frame::before { top: 0; left: 0; border-right: 0; border-bottom: 0; border-radius: 3px 0 0 0; }
+.scan-frame::after  { bottom: 0; right: 0; border-left: 0; border-top: 0; border-radius: 0 0 3px 0; }
+
+.scan-line {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(240, 214, 150, .95), transparent);
+  box-shadow: 0 0 14px rgba(240, 214, 150, .8);
+  animation: sweep 2.8s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  0%, 100% { top: 8%;  opacity: .25; }
+  50%      { top: 90%; opacity: 1; }
+}
+
+.scan p {
+  margin: 0;
+  max-width: 17rem;
+  color: #F6F1E6;
+  font-family: 'Jost', system-ui, sans-serif;
+  font-weight: 300;
+  font-size: .8rem;
+  line-height: 1.7;
+  letter-spacing: .1em;
+  text-align: center;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .7);
+}
+
+/* bottom action bar */
+.hud-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .5s ease, transform .5s var(--ease);
+}
+
+.hud-actions.is-in { opacity: 1; transform: none; }
+.hud-actions[hidden] { display: none; }
+
+.hud-actions .btn {
+  border-color: rgba(211, 185, 143, .55);
+  background: rgba(12, 18, 13, .62);
+  -webkit-backdrop-filter: blur(9px);
+          backdrop-filter: blur(9px);
+  color: #F6F1E6;
+  font-size: .7rem;
+  padding: .7rem 1rem;
+}
+
+.hud-actions .btn:hover,
+.hud-actions .btn:focus-visible { background: rgba(30, 42, 30, .8); border-color: var(--gold-lt); }
+
+/* MindAR injects its own scanning overlay; ours replaces it */
+.mindar-ui-overlay { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-line { animation: none; top: 50%; }
+  *, *::before, *::after { transition-duration: .001ms !important; }
+}

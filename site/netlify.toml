@@ -1,0 +1,185 @@
+[build]
+  publish = "."
+
+# HTML stays revalidated so edits to config.js / content go live immediately.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(self)"
+
+[[headers]]
+  for = "/assets/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/vendor/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Everything that can change between deploys is re-checked on every
+# visit. Netlify answers an unchanged file with a tiny "304 not
+# modified", so this costs a round trip, not a download — and nobody is
+# left looking at last week's card after a deploy. (Fonts and vendor
+# libraries above never change, so they are cached for good.)
+# Don't add a Cache-Control to "/*": Netlify merges every rule that
+# matches a path, and two Cache-Controls on one file conflict.
+# Images: every page asks for them by a versioned address
+# (leaves-tl.webp?v=1a2b3c4d), written by build-site.mjs, and a changed
+# image gets a new one. So a phone can keep them for good, and a guest
+# opening the link a second time waits for nothing.
+[[headers]]
+  for = "/assets/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/audio/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# The AR tracker file — re-checked too, so a recompiled target is picked up at once.
+[[headers]]
+  for = "/targets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "application/octet-stream"
+
+# The guest page is encrypted, but there is no reason for it to be
+# indexed, archived or cached by anything on the way either.
+[[headers]]
+  for = "/guests.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+    Cache-Control = "no-store"
+
+# >>> previews — written by build-site.mjs, do not edit by hand
+# A link carrying ?e= is served the copy of index.html whose preview
+# names only those events. The address in the guest's browser, and
+# the page itself, are unchanged.
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", to = ":to" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", p = ":p" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", to = ":to", p = ":p" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", event = ":event" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", to = ":to", event = ":event" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", p = ":p", event = ":event" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", to = ":to", p = ":p", event = ":event" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", open = ":open" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", to = ":to", open = ":open" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", p = ":p", open = ":open" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", to = ":to", p = ":p", open = ":open" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", event = ":event", open = ":open" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", to = ":to", event = ":event", open = ":open" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", p = ":p", event = ":event", open = ":open" }
+
+[[redirects]]
+  from = "/"
+  to = "/i/:e/"
+  status = 200
+  force = true
+  query = { e = ":e", to = ":to", p = ":p", event = ":event", open = ":open" }
+# <<< previews
+
+
