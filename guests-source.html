@@ -146,7 +146,7 @@ td.act{white-space:nowrap}
 <div class="wrap">
 
 <header>
-  <p class="kick" id="hdrKick">Abdullah &amp; Fiza</p>
+  <p class="kick" id="hdrKick"></p>
   <h1>Guest links &amp; QR codes</h1>
   <p class="lede">Paste your list, tick the events each family is invited to, and set how many
   places you are holding for them <em>at each one</em> — a family often gets more seats at the
@@ -241,7 +241,7 @@ td.act{white-space:nowrap}
   var $ = function (id) { return document.getElementById(id); };
   var EVENTS = H.list();
   var INK = '#1B1E1B';
-  var STORE = 'abdullah-fiza-guests-v1';
+  var STORE = (C.id || 'invitation') + '-guests-v1';
 
   var guests = [];
 
@@ -791,7 +791,7 @@ td.act{white-space:nowrap}
         .concat([q(linkFor(g))]).join(',');
     }).join('\n');
     saveBlob(new Blob([head + '\n' + body], { type: 'text/csv;charset=utf-8' }),
-             'abdullah-fiza-guest-links.csv');
+             (C.id || 'invitation') + '-guest-links.csv');
   });
 
   $('print').addEventListener('click', function () { window.print(); });

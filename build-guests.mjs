@@ -17,6 +17,7 @@
    ============================================================ */
 
 import { readFileSync, writeFileSync } from 'node:fs';
+import vm from 'node:vm';
 import { webcrypto as crypto } from 'node:crypto';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
@@ -25,6 +26,13 @@ import { dirname, join } from 'node:path';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SOURCE = join(HERE, 'guests-source.html');
 const OUT = join(HERE, 'site', 'guests.html');
+
+/* the couple's names for the lock screen, from config.js */
+const box = { window: {}, location: { search: '', hostname: '' }, URLSearchParams, Intl, Date };
+vm.createContext(box);
+vm.runInContext(readFileSync(join(HERE, 'site', 'assets', 'js', 'config.js'), 'utf8'), box);
+const COUPLE = String(box.window.WEDDING.couple || '')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 /* PBKDF2_ITER is only lowered when testing the page locally */
 const ITERATIONS = Number(process.env.PBKDF2_ITER || 310000);
 
@@ -102,7 +110,7 @@ button:disabled{opacity:.5;cursor:progress}
 
 <div id="lock">
   <div class="box">
-    <p class="kick">${'Abdullah &amp; Fiza'}</p>
+    <p class="kick">${COUPLE}</p>
     <h1>Guest links</h1>
     <p class="sub">for the family only</p>
     <div class="rule"></div>

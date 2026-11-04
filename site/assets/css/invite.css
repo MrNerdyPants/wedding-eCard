@@ -1,6 +1,6 @@
 
 /* ============================================================
-   Abdullah & Fiza — the invitation bundle
+   The e-card — the invitation bundle
    A deliberately single-world design: printed stationery, not a
    web page. No dark theme; every colour is painted explicitly so
    the page holds on any host background. Palette taken from the
@@ -1045,6 +1045,12 @@ body::after {
   width: 100%;
   margin-top: calc(4.6 * var(--u));
   text-align: left;
+}
+
+.cols-one {
+  grid-template-columns: auto;
+  justify-content: center;
+  text-align: center;
 }
 
 .col-h {

@@ -1,66 +1,95 @@
 /* ============================================================
-   Abdullah & Fiza — the invitation bundle
+   The e-card — every word on it lives here
    ------------------------------------------------------------
-   THIS IS THE ONLY FILE YOU NEED TO EDIT.
-   The invitation and the guest-link builder read every name,
-   date, time and venue from here.
+   THIS IS THE ONLY FILE YOU NEED TO EDIT for a new invitation.
+   Fill in the values below, then run  node build-site.mjs  and
+   deploy the site/ folder. The envelope, the cards, the link
+   previews, the calendar entries and the guest-link tool all read
+   from here.
 
-   Three events live in `events` below. Add, remove or reorder
-   them in `order` and every page follows — the bundle inside the
-   envelope, the guest checkboxes, the switcher, the calendar.
+   The values shipped with the template are placeholders for a
+   made-up couple, John Doe and Jane Smith. Replace every one.
+
+   Events live in `events`. Add, remove or reorder them in `order`
+   and every page follows — the bundle inside the envelope, the
+   guest checkboxes, the switcher, the calendar.
    ============================================================ */
 
 window.WEDDING = {
 
+  /* --- this invitation --------------------------------------
+     A short name for it: lowercase letters, numbers and dashes.
+     Used in calendar entries, downloaded file names and the guest
+     tool's saved list, so each invitation keeps its own.          */
+  id: 'john-jane-2027',
+
   /* --- the people ------------------------------------------- */
-  couple:   'Abdullah & Fiza',
-  hosts:    'Mr. & Mrs. Abdul Samad',
-  groom:    'Abdullah Janjua',
-  bride:    'Fiza Khalid',
-  weds:     'Weds',
-  /* the invitation line, as printed. With a guest's name on the card
-     it reads "Cordially invite / <name> / to the Wedding Ceremony…" */
+  couple:   'John & Jane',             /* tab title, link previews, share sheet */
+  monogram: 'J & J',                   /* pressed into the wax seal */
+  hosts:    'Mr. & Mrs. Richard Doe',  /* top line of every card, set in capitals */
+  groom:    'John Doe',
+  bride:    'Jane Smith',
+
+  /* the invitation line. Without a guest's name it reads as the two
+     lines below; with one it reads "<inviteGuest[0]> / name /
+     <inviteGuest[1]>" */
   invite:      'Cordially invite You to the Wedding',
   inviteRest:  'Ceremony of their Beloved Son',
   inviteGuest: ['Cordially invite', 'to the Wedding Ceremony of their Beloved Son'],
+
+  /* above the envelope, and at the very foot of the page. '' for none */
+  kicker:   'Bismillah',
   blessing: 'Barakallahu lakuma wa baraka alaikuma',
 
-  /* where it all happens: shown on the envelope and in link previews */
-  city: 'Faisalabad',
+  /* the small words printed on the card */
+  labels: {
+    weds:           'Weds',
+    lookingForward: 'Looking Forward',
+    rsvp:           'R.S.V.P',
+    location:       'View location'
+  },
 
-  /* Used in calendar entries, share sheets, link previews and the
-     guest links. Change it to the address Netlify gives the site
-     (or a custom domain), then run  node build-site.mjs  again. */
-  siteUrl: 'https://abdullah-weds-fiza.netlify.app/',
+  /* where it all happens: shown on the envelope and in link previews,
+     and added to any address below that leaves it out */
+  city: 'Springfield',
+
+  /* The address the site is published at. Used in calendar entries,
+     share sheets, link previews and guest links. Change it to the
+     address Netlify gives the site (or a custom domain), then run
+     node build-site.mjs  again. */
+  siteUrl: 'https://your-invitation.netlify.app/',
 
   /* Every time below is Pakistan Standard Time (UTC+5, no DST).
      The day and date printed on each card are derived from these
-     in Asia/Karachi, so a guest abroad still reads the local date. */
+     in this time zone, so a guest abroad still reads the local date. */
   timeZone: 'Asia/Karachi',
 
-  /* The order the cards sit in the envelope, first one on top. */
+  /* The order the cards sit in the envelope, first one on top.
+     Each key's first letter becomes its letter in guest links
+     (?e=mb), so keep those distinct where you can. */
   order: ['mehndi', 'barat', 'walima'],
 
   events: {
 
     /* ------------------------------------------------------ */
     mehndi: {
-      name:     'Mehndi',
+      name:     'Mehndi',                 /* in tabs, previews and the calendar */
       title:    'MEHNDI',                 /* the engraved title on the card */
-      startISO: '2026-11-13T19:00:00+05:00',
-      endISO:   '2026-11-13T23:00:00+05:00',
-      /* the programme, worded as it reads on the printed card */
+      startISO: '2027-02-12T19:00:00+05:00',
+      endISO:   '2027-02-12T23:00:00+05:00',
+      /* the programme: one row per line, [what, when] */
       schedule: [
         ['Rasm-e-Hina', '7PM'],
-        ['Dinner',      '8PM']
+        ['Dinner',      '9PM']
       ],
-      venue:    'Tota Pehlwan Dera',
-      address:  'St # 15, Tariqabad',
-      /* the pin from the QR code on the printed card */
-      map:      'https://maps.app.goo.gl/cNEF6YikfBZzMJLA7',
+      venue:    'The Rose Garden',
+      venueCaps: false,                   /* true sets the venue in capitals */
+      address:  '12 Main Street',
+      /* a Google Maps pin link for the venue (share → copy link in
+         Google Maps). Leave '' and the button searches for the venue. */
+      map:      '',
       thumb:    'assets/img/thumb-mehndi',
-      /* AR is built in but switched off: there is no camera tracker for
-         this card yet. See "AR" in the README before turning it on. */
+      /* AR is built in but switched off: see the README before turning it on */
       ar:       false
     },
 
@@ -68,16 +97,16 @@ window.WEDDING = {
     barat: {
       name:     'Barat',
       title:    'BARAT',
-      startISO: '2026-11-14T18:00:00+05:00',
-      endISO:   '2026-11-14T23:00:00+05:00',
+      startISO: '2027-02-13T18:00:00+05:00',
+      endISO:   '2027-02-13T23:00:00+05:00',
       schedule: [
         ['Sehra Bandi',        '6PM'],
         ['Departure of Barat', '7PM']
       ],
-      venue:    'Castle Marquee',
-      venueCaps: true,                    /* set in capitals, as printed */
-      address:  'Jaranwala Road, Faisalabad',
-      map:      'https://maps.app.goo.gl/eByiMJ2Wuao6vKnt9',
+      venue:    'Grand Marquee',
+      venueCaps: true,
+      address:  'Canal Road, Springfield',
+      map:      '',
       thumb:    'assets/img/thumb-barat',
       ar:       false
     },
@@ -86,51 +115,51 @@ window.WEDDING = {
     walima: {
       name:     'Walima',
       title:    'WALIMA',
-      startISO: '2026-11-15T19:00:00+05:00',
-      endISO:   '2026-11-15T23:00:00+05:00',
+      startISO: '2027-02-14T19:00:00+05:00',
+      endISO:   '2027-02-14T23:00:00+05:00',
       schedule: [
         ['Reception', '7PM'],
         ['Dinner',    '8PM']
       ],
-      venue:    'Quilium Marquee',
+      venue:    'Pearl Banquet Hall',
       venueCaps: true,
-      address:  'West Canal Road, Faisalabad',
-      map:      'https://maps.app.goo.gl/voJ1MAjDnAbekJQu5',
+      address:  'Mall Road, Springfield',
+      map:      '',
       thumb:    'assets/img/thumb-walima',
       ar:       false
     }
   },
 
   /* --- printed at the foot of every card ---------------------
-     "Looking Forward" on the left, "R.S.V.P" on the right.        */
+     The left column, under labels.lookingForward. [] to leave it off. */
   lookingForward: [
-    'Muhammad Hanif Janjua',
-    'Shahid Janjua',
-    'Asad Ullah',
-    'Hujat Ullah',
-    'Faizan Amjad'
+    'Richard Doe',
+    'Robert Doe',
+    'Mary Doe',
+    'James Roe',
+    'Jane Roe'
   ],
 
   /* --- RSVP -------------------------------------------------
-     `people` are the family taking replies. They are printed on the
-     card and again under the countdown.
+     `people` are the family taking replies. They are printed in the
+     right column of the card and again under the countdown.
 
      Give someone a number and their name becomes tappable:
        whatsapp : any format, e.g. '+92 300 1234567' or '0300 1234567'
        phone    : anything dialable, e.g. '+92 300 1234567'
      Leave both out and the name is simply printed.
 
-     `others` is the line that closes the R.S.V.P column on the card.
+     `others` closes the R.S.V.P column on the card. '' for none.
 
      The three below are optional and quite separate: fill in ONE of
      them and an RSVP button joins the row of actions as well — for a
      Google Form, or a single number the whole family shares.     */
   rsvp: {
     people: [
-      { name: 'Esa' },
-      { name: 'Razi Ullah' }
+      { name: 'Richard Doe' },
+      { name: 'Mary Doe' }
     ],
-    others: 'All Family Member & Friends',
+    others: 'All Family Members & Friends',
     note: '',
     whatsapp: '', email: '', url: ''
   },
@@ -146,7 +175,7 @@ window.WEDDING = {
     line:     'Invitation crafted by',
     name:     'Kashan Asim',
     whatsapp: '+92 332 4423632',
-    message:  'Assalamu alaikum Kashan! I saw the Abdullah & Fiza invitation and would like a card made for my event.',
+    message:  'Assalamu alaikum Kashan! I saw an invitation you made and would like a card made for my event.',
     more:     'services.html'
   },
 
@@ -198,7 +227,7 @@ window.WEDDING.helpers = (function (C) {
     e.start  = new Date(e.startISO);
     e.end    = new Date(e.endISO);
     /* the calendar and the map search want the city too, even where the
-       card leaves it off ('St # 15, Tariqabad') */
+       card leaves it off ('12 Main Street') */
     e.where  = e.venue + ', ' + e.address +
                (C.city && e.address.indexOf(C.city) === -1 ? ', ' + C.city : '');
     e.title  = e.title || e.name;
@@ -377,7 +406,7 @@ window.WEDDING.helpers = (function (C) {
     var out = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//Abdullah and Fiza//Wedding//EN',
+      'PRODID:-//' + C.couple.replace(/&/g, 'and') + '//Invitation//EN',
       'CALSCALE:GREGORIAN'
     ];
     list.forEach(function (e) {
@@ -387,7 +416,7 @@ window.WEDDING.helpers = (function (C) {
            event matches on it, and a new one would duplicate the entry.
            It is an identifier, not the site address — leave it alone
            even if the site is renamed. */
-        'UID:' + e.key + '-abdullah-fiza-2026@' + (location.hostname || 'invitation'),
+        'UID:' + e.key + '-' + (C.id || 'invitation') + '@' + (location.hostname || 'invitation'),
         'DTSTAMP:' + utc(new Date()),
         'DTSTART:' + utc(e.start),
         'DTEND:'   + utc(e.end),
@@ -406,8 +435,8 @@ window.WEDDING.helpers = (function (C) {
   function downloadIcs(e) {
     var list = Array.isArray(e) ? e : [e || event('walima')];
     var name = list.length > 1
-      ? 'abdullah-fiza-wedding.ics'
-      : list[0].key + '-abdullah-fiza.ics';
+      ? (C.id || 'invitation') + '.ics'
+      : list[0].key + '-' + (C.id || 'invitation') + '.ics';
     var url = URL.createObjectURL(
       new Blob([icsText(list)], { type: 'text/calendar;charset=utf-8' }));
     var a = document.createElement('a');

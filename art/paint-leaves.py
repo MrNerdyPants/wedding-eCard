@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Paint the watercolour eucalyptus sprigs for Abdullah & Fiza's cards.
+"""Paint the watercolour eucalyptus sprigs for the cards.
 
 The printed card only exists as a small scan, far too soft to put on a
 phone screen, so the two sprigs - one hanging into the top-left corner,

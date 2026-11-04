@@ -288,6 +288,11 @@ const BLOCK = /<!-- preview:[\s\S]*?<!-- \/preview -->/;
 if (!BLOCK.test(index)) throw new Error('index.html: the <!-- preview --> markers are missing');
 
 index = index.replace(BLOCK, previewBlock(ORDER));
+
+/* the tab: the couple's names, and the first letter of the monogram */
+index = index.replace(/<title>[^<]*<\/title>/, `<title>${esc(C.couple)}</title>`);
+const initial = encodeURIComponent(String(C.monogram || C.couple || '').trim().charAt(0) || '·');
+index = index.replace(/(text-anchor='middle'%3E)[^%]*(%3C\/text%3E%3C\/svg%3E)/, `$1${initial}$2`);
 writeFileSync(indexPath, index);
 console.log('index.html     preview tags for', H.namesOf(ORDER));
 

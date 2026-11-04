@@ -1,4 +1,4 @@
-AR is built into this invitation but SWITCHED OFF for Abdullah & Fiza.
+AR is built into this invitation but SWITCHED OFF.
 
 The camera view needs a tracker compiled from the printed card, and two
 pictures made for this couple. Until all three exist it stays off, and

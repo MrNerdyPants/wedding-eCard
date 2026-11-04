@@ -1,5 +1,5 @@
 /* ============================================================
-   Abdullah & Fiza — the card templates
+   The e-card — the card template
    ------------------------------------------------------------
    The printed card, set live: white stock, a watercolour sprig in
    two corners, the couple in script, the event in engraved capitals,
@@ -27,6 +27,12 @@ window.Cards = (function () {
     var n = document.createElementNS(SVGNS, tag);
     for (var k in attrs) n.setAttribute(k, attrs[k]);
     return n;
+  }
+
+  /* the small printed words, from config.js labels */
+  function label(key, fallback) {
+    var l = C.labels || {};
+    return l[key] != null ? l[key] : fallback;
   }
 
   /* ---------- versioned addresses -------------------------------
@@ -216,7 +222,7 @@ window.Cards = (function () {
     /* — the couple — */
     var couple = el('div', 'c-grp c-couple');
     couple.appendChild(rise(el('p', 'name', C.groom), 0.14));
-    couple.appendChild(rise(el('p', 'weds', C.weds), 0.3));
+    couple.appendChild(rise(el('p', 'weds', label('weds', 'Weds')), 0.3));
     couple.appendChild(rise(el('p', 'name', C.bride), 0.18));
     c.appendChild(couple);
 
@@ -241,7 +247,7 @@ window.Cards = (function () {
     loc.target = '_blank';
     loc.rel = 'noopener';
     loc.appendChild(icon(PIN, 'solid'));
-    loc.appendChild(el('span', '', 'View location'));
+    loc.appendChild(el('span', '', label('location', 'View location')));
     loc.setAttribute('aria-label', 'Open the ' + ev.name + ' venue in Maps');
     where.appendChild(rise(loc, 0.08));
 
@@ -265,7 +271,7 @@ window.Cards = (function () {
     var lf = C.lookingForward || [];
     if (lf.length) {
       var a = el('div', 'col col-lf');
-      a.appendChild(el('p', 'col-h', 'Looking Forward'));
+      a.appendChild(el('p', 'col-h', label('lookingForward', 'Looking Forward')));
       var ul = el('ul');
       lf.forEach(function (n) { ul.appendChild(el('li', '', n)); });
       a.appendChild(ul);
@@ -276,7 +282,7 @@ window.Cards = (function () {
     var people = (r.people || []).filter(function (p) { return p && p.name; });
     if (people.length || r.others) {
       var b = el('div', 'col col-rsvp');
-      b.appendChild(el('p', 'col-h', 'R.S.V.P'));
+      b.appendChild(el('p', 'col-h', label('rsvp', 'R.S.V.P')));
       var ul2 = el('ul');
       people.forEach(function (p) {
         var li = el('li');
@@ -295,6 +301,8 @@ window.Cards = (function () {
       b.appendChild(ul2);
       cols.appendChild(b);
     }
+    /* one column alone sits in the middle */
+    if (cols.children.length === 1) cols.classList.add('cols-one');
     foot.appendChild(rise(cols, 0.12));
     c.appendChild(foot);
 

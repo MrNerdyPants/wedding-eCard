@@ -1,105 +1,114 @@
-# Abdullah & Fiza — the wedding invitation
+# Wedding e-card template
 
-The digital invitation for **Abdullah Janjua & Fiza Khalid**: Mehndi, Barat and Walima,
-13–15 November 2026, Faisalabad. Built on the Moiz & Warisha invitation, with the card
-redrawn from the printed one (`scan/Abdullah Wedding.jpeg`).
+A digital wedding invitation that opens like a real one. The guest taps a wax seal, and the
+envelope hands them only the cards they are invited to (Mehndi, Barat, Walima, or any
+events you like), with their name and seat count on each card. Under the card are a
+countdown, Add to Calendar, Directions and Share, plus the RSVP names.
 
-A guest opens a link, taps the sage wax seal, and the envelope hands them only the cards
-they are invited to, with their name and seats on each. Under the card: a countdown,
-Add to Calendar, Directions (the exact pins from the QR codes on the printed cards) and
-Share.
+It ships filled in for a made-up couple, **John Doe & Jane Smith**. Everything that
+belongs to a real couple lives in one file, `site/assets/js/config.js`. Change the values
+there and the whole invitation follows: the envelope, the cards, the link previews, the
+calendar entries and the guest-link tool.
 
-## Deploying
+## Making a new invitation
 
-```
-node build-site.mjs
-```
+1. **Copy this folder** for the new couple. Keep the template itself as John Doe, and
+   don't commit a client's details to a public repository.
+2. **Fill in `site/assets/js/config.js`.** Every value has a comment beside it. The main ones:
 
-Run that from this folder before every deploy, then **drag the `site` folder — only that
-folder — onto [app.netlify.com/drop](https://app.netlify.com/drop)**.
+   | Setting | What it is |
+   |---|---|
+   | `id` | short name for this invitation, e.g. `ali-sara-2027` (calendar files, the guest tool's saved list) |
+   | `couple` | `'Ali & Sara'`: the browser tab, link previews, share sheet |
+   | `monogram` | `'A & S'`: pressed into the wax seal |
+   | `hosts`, `groom`, `bride` | the top line of the card and the names in script |
+   | `invite`, `inviteRest`, `inviteGuest` | the invitation line, without and with a guest's name |
+   | `kicker`, `blessing` | the line above the envelope and at the foot of the page (`''` for none) |
+   | `labels` | the small printed words: *Weds*, *Looking Forward*, *R.S.V.P*, *View location* |
+   | `city` | shown on the envelope and in previews; added to addresses that leave it out |
+   | `siteUrl` | the address the site is published at |
+   | `order`, `events` | the events, in envelope order: name, engraved title, start/end time, programme rows, venue, address, Google Maps pin |
+   | `lookingForward` | the left column at the foot of the card (`[]` to leave it off) |
+   | `rsvp.people`, `rsvp.others` | the right column; give a person a `whatsapp` number and their name becomes tappable |
+   | `credit` | the "Invitation crafted by" line at the foot of the page |
+   | `music` | drop an mp3 at `site/assets/audio/wedding.mp3` |
 
-`build-site.mjs` photographs the three cards for the envelope, draws the link-preview
-images, fingerprints every CSS/JS/image link so phones fetch fresh files, and writes the
-per-event preview pages (`site/i/`, `site/404.html`, the block in `site/netlify.toml`).
-It needs Edge or Chrome, and finds either by itself. Never edit those generated files by
-hand.
+3. **Build it:**
 
-**Once Netlify gives the site its address**, put it in `site/assets/js/config.js` as
-`siteUrl` (it is `https://abdullah-weds-fiza.netlify.app/` for now), run
-`node build-site.mjs` again, and re-deploy. Link previews, calendar entries and the guest
-links all use it.
+   ```
+   node build-site.mjs
+   ```
 
-## Changing anything
+   This photographs the cards for the envelope, draws the link-preview images, writes the
+   per-event preview pages and Netlify rules, and fingerprints every file so phones fetch
+   fresh copies. It needs Microsoft Edge or Google Chrome, and finds either by itself.
+   Run it again after **every** change to `config.js`.
 
-Every name, date, time, venue and map pin is in **`site/assets/js/config.js`**. Edit it,
-run `node build-site.mjs`, re-deploy.
+4. **Make the guest-link tool**, with a password of your choice:
 
-- The programme rows (`Rasm-e-Hina … 7PM`) are each event's `schedule`.
-- `lookingForward` is the left column at the foot of the card; `rsvp.people` and
-  `rsvp.others` are the R.S.V.P column.
-- Give an RSVP person a number (`whatsapp: '0300 1234567'`) and their name becomes a
-  WhatsApp link on the card and under the countdown. None are set yet.
-- Background music: drop an mp3 at `site/assets/audio/wedding.mp3`. The control only
-  appears once the file exists.
+   ```
+   node build-guests.mjs "a password"
+   ```
+
+   This writes an encrypted `site/guests.html`. The password is never stored anywhere, so
+   keep it somewhere safe. `.gitignore` keeps `guests.html` out of git.
+
+5. **Deploy:** drag the `site` folder, and only that folder, onto
+   [app.netlify.com/drop](https://app.netlify.com/drop). Rename the site in Netlify to
+   match `siteUrl`, or put Netlify's address in `siteUrl`, rebuild and upload again. To
+   update it later, upload `site` from the site's **Deploys** tab, not from the Drop page
+   (which makes a new site).
 
 ## Guest links
 
-`site/guests.html` is the guest-link and QR tool, encrypted. Open
-`<site>/guests.html` and enter the password you were given. Your list stays in that
-browser and is never uploaded.
+`<site>/guests.html` makes them: paste your guest list, tick each family's events, set
+their seats. Each guest gets one link, plus a QR code. The links look like this:
 
-To change the tool, edit `guests-source.html` (never deployed) and re-encrypt:
+| Part | Does |
+|---|---|
+| `?to=The%20Roe%20Family` | puts their name on the envelope and every card |
+| `&e=bw` | only these events, by first letter (`m`ehndi, `b`arat, `w`alima) |
+| `&p=b2w4` | seats per event (or `p=4` for the same number at each) |
+| `&event=w` | this card waits on top of the pile |
+| `&open=1` | skips the envelope |
 
-```
-node build-guests.mjs "your password"
-```
+WhatsApp previews name only the guest's events (*"your invitation to the Barat &
+Walima"*). That's what the `site/i/` pages and the rules in `netlify.toml` are for.
 
-The same command with a new password changes the password.
+## The card's look
 
-Link format, the same as Moiz & Warisha's: `?to=Name` puts a name on the cards,
-`?e=mb` limits the envelope to Mehndi and Barat (`m`, `b`, `w`), `?p=m6b2w4` sets seats per
-event, `?event=w` puts that card on top, `?open=1` skips the envelope.
-
-## The card
-
-The printed card is only a small scan, so nothing from it is used directly:
-
-- **Type**: Bodoni Moda (hosts, titles, date), Libre Baskerville (text), Pinyon Script (names),
-  all self-hosted in `site/assets/fonts`.
-- **MEHNDI / BARAT / WALIMA**: the engraved lines are cut into a heavy Bodoni by an SVG filter
-  in `site/assets/js/cards.js` (`title()`). They are sharp at any size.
-- **The leaves** are painted in watercolour by `art/paint-leaves.py`
-  (`python art/paint-leaves.py`, then `node build-site.mjs`). Change the seeds or sprays at
-  the bottom of that file for different sprigs.
-- The QR code on the printed card becomes a **View location** button on the screen.
+- **Type**: Bodoni Moda (hosts, titles, dates), Libre Baskerville (text) and Pinyon Script
+  (names), self-hosted in `site/assets/fonts`.
+- **The engraved titles** (MEHNDI, BARAT, WALIMA) are a heavy Bodoni with lines cut in by an
+  SVG filter in `site/assets/js/cards.js` (`title()`), so they stay sharp at any size.
+- **The watercolour leaves** are painted by `art/paint-leaves.py`. Change the seeds or the
+  sprays at the bottom of that file for different sprigs, then run
+  `python art/paint-leaves.py` and `node build-site.mjs`.
+- **Colours** are the tokens at the top of `site/assets/css/invite.css`.
 
 ## AR
 
-The AR view from the Moiz & Warisha invitation is included (`site/ar.html`,
-`assets/js/ar.js`, `assets/css/ar.css`, the A-Frame and MindAR libraries) but **switched
-off**: every event has `ar: false`, so the "View in AR" button never shows, and `ar.html` only
-says the tracker isn't installed. Moiz & Warisha's tracker, monogram and date pictures were
-deliberately not copied. To switch it on, follow `site/targets/README.txt`.
+The AR camera view (`site/ar.html`) is included but **switched off**: every event has
+`ar: false`, so no button links to it, and the page itself only says the tracker isn't
+installed. To switch it on for a couple, follow `site/targets/README.txt`.
 
 ## What's in here
 
 ```
-site/                 drag this to Netlify
-  index.html          the envelope, the bundle, and the cards
-  services.html       the cards Kashan makes, and how to order one
-  guests.html         the guest tool, encrypted
-  ar.html             AR, switched off
-  404.html, i/        written by build-site.mjs: per-event link previews
-  netlify.toml        caching and the preview rules
-  assets/js/config.js THE file to edit
-  assets/js/cards.js  the card template
-  assets/js/invite.js the envelope, tray and RSVP
-  assets/css/invite.css
+site/                    drag this to Netlify
+  index.html             the envelope, the bundle, the cards
+  services.html          the cards you make, and how to order one
+  ar.html                AR, switched off
+  404.html, i/           written by build-site.mjs: per-event link previews
+  netlify.toml           caching and the preview rules
+  assets/js/config.js    THE file to edit
+  assets/js/cards.js     the card template
+  assets/js/invite.js    the envelope, tray and RSVP
+  assets/css/invite.css  the look
 art/
-  paint-leaves.py     paints the watercolour sprigs
-  card-render.html    used by build-site.mjs to photograph the cards
-build-site.mjs        run before every deploy
-build-guests.mjs      encrypts guests-source.html into site/guests.html
-guests-source.html    the guest tool in plain text — edit this one
-scan/                 the printed card, for reference
+  paint-leaves.py        paints the watercolour sprigs
+  card-render.html       used by build-site.mjs to photograph the cards
+build-site.mjs           run after every change
+build-guests.mjs         encrypts guests-source.html into site/guests.html
+guests-source.html       the guest tool in plain text
 ```

@@ -1,5 +1,5 @@
 /* ============================================================
-   Abdullah & Fiza — the invitation bundle
+   The e-card — the invitation bundle
    Opens the envelope, hands over the cards, and keeps the tray
    pointed at whichever card is showing.
    All event settings live in config.js, loaded before this file.
@@ -29,6 +29,26 @@
 
   var built   = {};       /* key -> card element */
   var current = null;     /* the event showing now */
+
+  /* ================= the words from config.js ============= */
+
+  /* Everything on the page that names the couple is filled in here,
+     before the envelope is shown, so config.js is the only place a
+     new invitation needs editing. */
+  document.title = C.couple;
+  Array.prototype.forEach.call(document.querySelectorAll('.seal-mono'), function (t) {
+    t.textContent = C.monogram || '';
+  });
+  var firstYear = events.length ? H.dateParts(H.event(H.order[0])).year : '';
+  Array.prototype.forEach.call(document.querySelectorAll('.seal-year'), function (t) {
+    t.textContent = firstYear;
+  });
+  $('openKicker').textContent = C.kicker || '';
+  $('openKicker').hidden = !C.kicker;
+  document.querySelector('.seal-rule').hidden = !C.kicker;
+  $('footBlessing').textContent = C.blessing || '';
+  $('footBlessing').hidden = !C.blessing;
+  $('rsvpLabel').textContent = (C.labels && C.labels.rsvp) || 'R.S.V.P';
 
   /* ================= the envelope ========================= */
 

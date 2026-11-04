@@ -1,5 +1,5 @@
 /* ============================================================
-   Abdullah & Fiza — AR view (switched off: see README)
+   The e-card — AR view (switched off: see README)
    Settings live in config.js. This file only drives the scene.
    ============================================================ */
 
@@ -9,6 +9,9 @@
   const CONFIG = window.WALIMA;
   const H = CONFIG.helpers;
   const $ = (id) => document.getElementById(id);
+
+  document.title = CONFIG.couple + ' in AR';
+  if ($('gateKicker')) $('gateKicker').textContent = CONFIG.couple;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const guest = H.guest();

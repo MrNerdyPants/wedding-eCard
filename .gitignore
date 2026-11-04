@@ -147,3 +147,14 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# build scratch (browser profiles, share-image drafts)
+.tmp/
+
+# the guest tool is encrypted with each client's own password:
+# build it with  node build-guests.mjs "password"  and never commit it
+site/guests.html
+
+# a client's printed card or other private material
+scan/
+private/

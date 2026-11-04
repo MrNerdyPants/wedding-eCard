@@ -1,5 +1,5 @@
 /* ============================================================
-   Abdullah & Fiza — background music
+   The e-card — background music
    ------------------------------------------------------------
    Settings live in config.js (window.WALIMA.music).
 
